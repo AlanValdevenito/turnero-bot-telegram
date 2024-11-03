@@ -15,12 +15,7 @@ function crear_para_ambiente() {
   NAMESPACE="$1-$2"
   echo "$NAMESPACE"
 
-  kubectl create namespace $NAMESPACE
-
-  sleep 3
-
   kubectl apply -n $NAMESPACE -f $AMBIENTE.configmap.yaml
-
 
   sleep 3
 
