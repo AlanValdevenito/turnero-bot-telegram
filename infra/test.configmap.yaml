@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: botconfig
 data:
-  LOG_LEVEL: "debug"
-  TELEGRAM_USERNAME: memo2_docentes_bot
   APP_MODE: production
+  LOG_LEVEL: debug
+  LOG_URL: CAMBIAR
+  TELEGRAM_TOKEN: CAMBIAR
+  TELEGRAM_USERNAME: CAMBIAR

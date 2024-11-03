@@ -14,11 +14,21 @@ spec:
       labels:
         app: telegrambot
     spec:
+      imagePullSecrets:
+        - name: registrycredentials
       containers:
       - name: telegrambot
-        image: registry.gitlab.com/fiuba-memo2/ejemplos/telegram-bot-example:0.0.17
+        image: registry.gitlab.com/fiuba-memo2/ejemplos/telegram-bot-example:0.0.16
+        imagePullPolicy: Always
         envFrom:
           - secretRef:
               name: botsecret
           - configMapRef:
               name: botconfig
+            resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
