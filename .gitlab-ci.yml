@@ -34,7 +34,7 @@ package_job:
     - VERSION=$(cat VERSION.txt)
     - echo $VERSION
     - docker build -f Dockerfile.prod --build-arg VERSION=$VERSION --build-arg GIT_COMMIT=$CI_COMMIT_SHORT_SHA -t $CI_REGISTRY_IMAGE:$VERSION .
-    - docker tag $CI_REGISTRY_IMAGE:$VERSION $REGISTRY_URL/$CI_PROJECT_NAME:latest
+    - docker tag $CI_REGISTRY_IMAGE:$VERSION $CI_REGISTRY_IMAGE:latest
     - docker push $CI_REGISTRY_IMAGE:$VERSION
     - docker push $CI_REGISTRY_IMAGE:latest
   only:
