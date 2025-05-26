@@ -3,7 +3,7 @@ services:
   - docker:dind
 
 variables:
-  TEAM: docentes
+  TEAM: negro
 
 stages:
   - build
