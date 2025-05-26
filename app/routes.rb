@@ -50,7 +50,10 @@ class Routes
   end
 
   on_message '/version' do |bot, message|
-    bot.api.send_message(chat_id: message.chat.id, text: Version.current)
+    connection = Faraday.new('http://web:3000/version')
+    response_version = connection.get
+    response = "Bot version:#{Version.current} - Api Version: #{response_version.body}" 
+    bot.api.send_message(chat_id: message.chat.id, text: response)
   end
 
   default do |bot, message|

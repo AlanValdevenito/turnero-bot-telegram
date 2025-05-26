@@ -5,6 +5,4 @@ metadata:
 data:
   APP_MODE: production
   LOG_LEVEL: info
-  LOG_URL: CAMBIAR
-  TELEGRAM_TOKEN: CAMBIAR
-  TELEGRAM_USERNAME: CAMBIAR
+  TELEGRAM_USERNAME: memo2NegroProdBot
