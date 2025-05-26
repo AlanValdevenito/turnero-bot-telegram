@@ -49,11 +49,18 @@ class Routes
     bot.api.send_message(chat_id: message.message.chat.id, text: response)
   end
 
+def self.realizar_request(anio)
+    url = "#{BASE_URL}/#{anio}"
+    connection = Faraday.new(url)
+    response = connection.get
+
+    raise ErrorAPIFeriados unless response.success?
+
+    JSON.parse(response.body)
+end
+
   on_message '/version' do |bot, message|
-    connection = Faraday.new('http://web:3000/version')
-    response_version = connection.get
-    response = "Bot version:#{Version.current} - Api Version: #{response_version.body}" 
-    bot.api.send_message(chat_id: message.chat.id, text: response)
+    bot.api.send_message(chat_id: message.chat.id, text: Version.current)
   end
 
   default do |bot, message|
