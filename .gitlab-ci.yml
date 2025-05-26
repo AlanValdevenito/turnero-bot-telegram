@@ -9,7 +9,7 @@ stages:
   - build
   - package
   - deploy_test
-  - deployt_prod
+  - deploy_prod
 
 build_job:
   stage: build
@@ -56,7 +56,7 @@ deploy_test_job:
     - tags
 
 deploy_prod_job:
-  stage: deploy_test
+  stage: deploy_prod
   image: nicopaez/kubectl:1.32.5
   environment: prod
   script:
@@ -66,5 +66,4 @@ deploy_prod_job:
     - kubectl -n ${TEAM}-${CI_ENVIRONMENT_NAME} apply -f infra/${CI_ENVIRONMENT_NAME}.secrets.yaml
     - kubectl -n ${TEAM}-${CI_ENVIRONMENT_NAME} apply -f infra/${CI_ENVIRONMENT_NAME}.configmap.yaml
     - kubectl -n ${TEAM}-${CI_ENVIRONMENT_NAME} set image deployment/telegrambot telegrambot=$CI_REGISTRY_IMAGE:$VERSION
-  only:
-    - manual
+  when: manual
