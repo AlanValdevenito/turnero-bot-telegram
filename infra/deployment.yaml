@@ -23,6 +23,8 @@ spec:
         envFrom:
           - configMapRef:
               name: botconfig
+          - secretRef:
+              name: botsecret
         resources:
           requests:
             memory: "64Mi"
