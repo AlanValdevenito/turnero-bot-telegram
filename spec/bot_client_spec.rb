@@ -5,6 +5,8 @@ require 'web_mock'
 
 require "#{File.dirname(__FILE__)}/../app/bot_client"
 
+ENV['API_URL'] ||= 'http://web:3000'
+
 def when_i_send_text(token, message_text)
   body = { "ok": true, "result": [{ "update_id": 693_981_718,
                                     "message": { "message_id": 11,
@@ -75,14 +77,25 @@ def then_i_get_keyboard_message(token, message_text)
     .to_return(status: 200, body: body.to_json, headers: {})
 end
 
+def stub_api
+  api_response_body = { "version": '0.0.1' }
+  stub_request(:get, "#{ENV['API_URL']}/version")
+    .with(
+      headers: {
+        'Accept' => '*/*',
+        'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+        'User-Agent' => 'Faraday v2.7.4'
+      }
+    ).to_return(status: 200, body: api_response_body.to_json, headers: {})
+end
+
 describe 'BotClient' do
   it 'should get a /version message and respond with current version' do
-    token = 'fake_token'
+    stub_api
+    when_i_send_text('fake_token', '/version')
+    then_i_get_text('fake_token', "Bot version: #{Version.current} - Api Version: 0.0.1")
 
-    when_i_send_text(token, '/version')
-    then_i_get_text(token, Version.current)
-
-    app = BotClient.new(token)
+    app = BotClient.new('fake_token')
 
     app.run_once
   end
