@@ -1,4 +1,5 @@
 require 'json'
+require_relative 'excepciones/email_en_uso_exception'
 
 class ProveedorTurnero
   def initialize(api_url)
@@ -10,6 +11,19 @@ class ProveedorTurnero
 
     if response.success?
       JSON.parse(response.body)
+    else
+      manejar_error(response)
+    end
+  end
+
+  private
+
+  def manejar_error(response)
+    error = JSON.parse(response.body)['error']
+
+    case error
+    when /ya está en uso/i
+      raise EmailYaEnUsoException
     else
       raise StandardError
     end

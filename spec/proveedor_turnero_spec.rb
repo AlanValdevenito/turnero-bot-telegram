@@ -12,6 +12,12 @@ describe 'ProveedorTurnero' do
       .to_return(status: 200, body: { message: 'El paciente se registró existosamente' }.to_json, headers: { 'Content-Type' => 'application/json' })
   end
 
+  def cuando_quiero_registrar_usuario_email_en_uso(email)
+    stub_request(:post, "#{api_url}/registrar")
+      .with(body: { email: })
+      .to_return(status: 400, body: { error: 'El email ingresado ya está en uso' }.to_json, headers: { 'Content-Type' => 'application/json' })
+  end
+
   it 'registra un usuario exitosamente' do
     email = 'test@test.com'
 
@@ -21,5 +27,13 @@ describe 'ProveedorTurnero' do
     response = turnero.crear_usuario(email)
 
     expect(response).to eq(JSON.parse(response_body))
+  end
+
+  it 'da error cuando el email ya está en uso' do
+    email = 'test@test.com'
+
+    cuando_quiero_registrar_usuario_email_en_uso(email)
+
+    expect { turnero.crear_usuario(email) }.to raise_error(EmailYaEnUsoException)
   end
 end

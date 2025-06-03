@@ -1,0 +1,2 @@
+class EmailYaEnUsoException < StandardError
+end

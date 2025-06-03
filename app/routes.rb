@@ -3,6 +3,7 @@ require "#{File.dirname(__FILE__)}/../lib/version"
 require "#{File.dirname(__FILE__)}/tv/series"
 require "#{File.dirname(__FILE__)}/turnero/turnero"
 require "#{File.dirname(__FILE__)}/turnero/proveedor_turnero"
+require "#{File.dirname(__FILE__)}/turnero/excepciones/email_en_uso_exception"
 
 class Routes
   include Routing
@@ -64,6 +65,8 @@ class Routes
     begin
       turnero.registrar_paciente(email)
       bot.api.send_message(chat_id: message.chat.id, text: 'Registración exitosa')
+    rescue EmailYaEnUsoException
+      bot.api.send_message(chat_id:, text: 'El email ingresado ya está en uso')
     rescue StandardError => e
       bot.api.send_message(chat_id: message.chat.id, text: "Error al registrar el paciente: #{e.message}")
     end
