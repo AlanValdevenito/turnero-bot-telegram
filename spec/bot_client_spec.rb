@@ -89,6 +89,22 @@ def stub_api
     ).to_return(status: 200, body: api_response_body.to_json, headers: {})
 end
 
+def stub_registro(email)
+  stub_request(:post, "#{ENV['API_URL']}/registrar")
+    .with(
+      body: { email: }.to_json,
+      headers: { 'Content-Type' => 'application/json' }
+    ).to_return(status: 200, body: { id: 123, email: }.to_json)
+end
+
+def registracion_exitosa(email)
+  token = 'fake_token'
+  when_i_send_text(token, "/registrar #{email}")
+  stub_registro(email)
+  then_i_get_text(token, 'Registración exitosa')
+  BotClient.new(token).run_once
+end
+
 describe 'BotClient' do
   it 'should get a /version message and respond with current version' do
     stub_api
@@ -164,5 +180,10 @@ describe 'BotClient' do
     app = BotClient.new(token)
 
     app.run_once
+  end
+
+  it 'should register a patient and respond with success message' do
+    email = 'paciente@example.com'
+    registracion_exitosa(email)
   end
 end

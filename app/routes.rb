@@ -1,6 +1,8 @@
 require "#{File.dirname(__FILE__)}/../lib/routing"
 require "#{File.dirname(__FILE__)}/../lib/version"
 require "#{File.dirname(__FILE__)}/tv/series"
+require "#{File.dirname(__FILE__)}/turnero/turnero"
+require "#{File.dirname(__FILE__)}/turnero/proveedor_turnero"
 
 class Routes
   include Routing
@@ -57,11 +59,13 @@ class Routes
   end
 
   on_message_pattern %r{/registrar (?<email>.*)} do |bot, message, args|
-    response = Faraday.post("#{ENV['API_URL']}/registrar", { email: args['email'] })
-    if response.status == 200
+    email = args['email']
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    begin
+      turnero.registrar_paciente(email)
       bot.api.send_message(chat_id: message.chat.id, text: 'Registración exitosa')
-    else
-      bot.api.send_message(chat_id: message.chat.id, text: 'No se pudo registrar tu email. Intenta nuevamente.')
+    rescue StandardError => e
+      bot.api.send_message(chat_id: message.chat.id, text: "Error al registrar el paciente: #{e.message}")
     end
   end
 
