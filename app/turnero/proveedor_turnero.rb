@@ -1,5 +1,6 @@
 require 'json'
 require_relative 'excepciones/email_en_uso_exception'
+require_relative 'excepciones/paciente_registrado_exception'
 
 class ProveedorTurnero
   def initialize(api_url)
@@ -7,7 +8,9 @@ class ProveedorTurnero
   end
 
   def crear_usuario(email, telegram_id)
-    response = Faraday.post("#{@api_url}/registrar", { email:, telegram_id: }.to_json, { 'Content-Type' => 'application/json' })
+    payload = { email:, telegram_id: }.to_json
+
+    response = Faraday.post("#{@api_url}/registrar", payload, { 'Content-Type' => 'application/json' })
 
     if response.success?
       JSON.parse(response.body)
@@ -24,6 +27,8 @@ class ProveedorTurnero
     case error
     when /ya está en uso/i
       raise EmailYaEnUsoException
+    when /paciente.*registrado/i
+      raise PacienteYaRegistradoException
     else
       raise StandardError
     end

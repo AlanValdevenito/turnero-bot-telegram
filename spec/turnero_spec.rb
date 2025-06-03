@@ -16,4 +16,9 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:crear_usuario).and_raise(EmailYaEnUsoException)
     expect { turnero.registrar_paciente(email, telegram_id) }.to raise_error(EmailYaEnUsoException)
   end
+
+  it 'da error si el paciente ya esta registrado' do
+    allow(proveedor_mock).to receive(:crear_usuario).and_raise(PacienteYaRegistradoException)
+    expect { turnero.registrar_paciente(email, telegram_id) }.to raise_error(PacienteYaRegistradoException)
+  end
 end

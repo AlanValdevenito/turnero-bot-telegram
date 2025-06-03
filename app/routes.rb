@@ -67,7 +67,9 @@ class Routes
       turnero.registrar_paciente(email, telegram_id)
       bot.api.send_message(chat_id: message.chat.id, text: 'Registración exitosa')
     rescue EmailYaEnUsoException
-      bot.api.send_message(chat_id:, text: 'El email ingresado ya está en uso')
+      bot.api.send_message(chat_id: message.chat.id, text: 'El email ingresado ya está en uso')
+    rescue PacienteYaRegistradoException
+      bot.api.send_message(chat_id: message.chat.id, text: 'El paciente ya se encuentra registrado')
     rescue StandardError => e
       bot.api.send_message(chat_id: message.chat.id, text: "Error al registrar el paciente: #{e.message}")
     end

@@ -106,6 +106,38 @@ def registracion_exitosa(email, telegram_id)
   BotClient.new(token).run_once
 end
 
+def stub_email_en_uso(email, telegram_id)
+  stub_request(:post, "#{ENV['API_URL']}/registrar")
+    .with(
+      body: { email:, telegram_id: }.to_json,
+      headers: { 'Content-Type' => 'application/json' }
+    ).to_return(status: 400, body: { error: 'El email ingresado ya está en uso' }.to_json)
+end
+
+def registro_falla_email_en_uso(email, telegram_id)
+  token = 'fake_token'
+  when_i_send_text(token, "/registrar #{email}")
+  stub_email_en_uso(email, telegram_id)
+  then_i_get_text(token, 'El email ingresado ya está en uso')
+  BotClient.new(token).run_once
+end
+
+def stub_paciente_ya_registrado(email, telegram_id)
+  stub_request(:post, "#{ENV['API_URL']}/registrar")
+    .with(
+      body: { email:, telegram_id: }.to_json,
+      headers: { 'Content-Type' => 'application/json' }
+    ).to_return(status: 400, body: { error: 'El paciente ya se encuentra registrado' }.to_json)
+end
+
+def registro_falla_paciente_registrado(email, telegram_id)
+  token = 'fake_token'
+  when_i_send_text(token, "/registrar #{email}")
+  stub_paciente_ya_registrado(email, telegram_id)
+  then_i_get_text(token, 'El paciente ya se encuentra registrado')
+  BotClient.new(token).run_once
+end
+
 describe 'BotClient' do
   it 'should get a /version message and respond with current version' do
     stub_api
@@ -185,7 +217,16 @@ describe 'BotClient' do
 
   it 'should register a patient and respond with success message' do
     email = 'paciente@example.com'
-    telegram_id = USER_ID
-    registracion_exitosa(email, telegram_id)
+    registracion_exitosa(email, USER_ID)
+  end
+
+  it 'should show an error if email is already in use' do
+    email = 'duplicado@example.com'
+    registro_falla_email_en_uso(email, USER_ID)
+  end
+
+  it 'should show an error if patient is already registered' do
+    email = 'registrado@example.com'
+    registro_falla_paciente_registrado(email, USER_ID)
   end
 end
