@@ -56,6 +56,15 @@ class Routes
     bot.api.send_message(chat_id: message.chat.id, text: response)
   end
 
+  on_message_pattern %r{/registrar (?<email>.*)} do |bot, message, args|
+    response = Faraday.post("#{ENV['API_URL']}/registrar", { email: args['email'] })
+    if response.status == 200
+      bot.api.send_message(chat_id: message.chat.id, text: 'Registración exitosa')
+    else
+      bot.api.send_message(chat_id: message.chat.id, text: 'No se pudo registrar tu email. Intenta nuevamente.')
+    end
+  end
+
   default do |bot, message|
     bot.api.send_message(chat_id: message.chat.id, text: 'Uh? No te entiendo! Me repetis la pregunta?')
   end
