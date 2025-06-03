@@ -3,7 +3,7 @@ class Turnero
     @proveedor_turnero = proveedor_turnero
   end
 
-  def registrar_paciente(email)
-    @proveedor_turnero.crear_usuario(email)
+  def registrar_paciente(email, telegram_id)
+    @proveedor_turnero.crear_usuario(email, telegram_id)
   end
 end

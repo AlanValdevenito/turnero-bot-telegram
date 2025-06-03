@@ -61,9 +61,10 @@ class Routes
 
   on_message_pattern %r{/registrar (?<email>.*)} do |bot, message, args|
     email = args['email']
+    telegram_id = message.from.id
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     begin
-      turnero.registrar_paciente(email)
+      turnero.registrar_paciente(email, telegram_id)
       bot.api.send_message(chat_id: message.chat.id, text: 'Registración exitosa')
     rescue EmailYaEnUsoException
       bot.api.send_message(chat_id:, text: 'El email ingresado ya está en uso')

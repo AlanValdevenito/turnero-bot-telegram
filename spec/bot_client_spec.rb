@@ -6,12 +6,13 @@ require 'web_mock'
 require "#{File.dirname(__FILE__)}/../app/bot_client"
 
 ENV['API_URL'] ||= 'http://web:3000'
+USER_ID = 141_733_544
 
 def when_i_send_text(token, message_text)
   body = { "ok": true, "result": [{ "update_id": 693_981_718,
                                     "message": { "message_id": 11,
-                                                 "from": { "id": 141_733_544, "is_bot": false, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "language_code": 'en' },
-                                                 "chat": { "id": 141_733_544, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
+                                                 "from": { "id": USER_ID, "is_bot": false, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "language_code": 'en' },
+                                                 "chat": { "id": USER_ID, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
                                                  "date": 1_557_782_998, "text": message_text,
                                                  "entities": [{ "offset": 0, "length": 6, "type": 'bot_command' }] } }] }
 
@@ -23,11 +24,11 @@ def when_i_send_keyboard_updates(token, message_text, inline_selection)
   body = {
     "ok": true, "result": [{
       "update_id": 866_033_907,
-      "callback_query": { "id": '608740940475689651', "from": { "id": 141_733_544, "is_bot": false, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "language_code": 'en' },
+      "callback_query": { "id": '608740940475689651', "from": { "id": USER_ID, "is_bot": false, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "language_code": 'en' },
                           "message": {
                             "message_id": 626,
                             "from": { "id": 715_612_264, "is_bot": true, "first_name": 'fiuba-memo2-prueba', "username": 'fiuba_memo2_bot' },
-                            "chat": { "id": 141_733_544, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
+                            "chat": { "id": USER_ID, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
                             "date": 1_595_282_006,
                             "text": message_text,
                             "reply_markup": {
@@ -51,7 +52,7 @@ def then_i_get_text(token, message_text)
   body = { "ok": true,
            "result": { "message_id": 12,
                        "from": { "id": 715_612_264, "is_bot": true, "first_name": 'fiuba-memo2-prueba', "username": 'fiuba_memo2_bot' },
-                       "chat": { "id": 141_733_544, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
+                       "chat": { "id": USER_ID, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
                        "date": 1_557_782_999, "text": message_text } }
 
   stub_request(:post, "https://api.telegram.org/bot#{token}/sendMessage")
@@ -65,7 +66,7 @@ def then_i_get_keyboard_message(token, message_text)
   body = { "ok": true,
            "result": { "message_id": 12,
                        "from": { "id": 715_612_264, "is_bot": true, "first_name": 'fiuba-memo2-prueba', "username": 'fiuba_memo2_bot' },
-                       "chat": { "id": 141_733_544, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
+                       "chat": { "id": USER_ID, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
                        "date": 1_557_782_999, "text": message_text } }
 
   stub_request(:post, "https://api.telegram.org/bot#{token}/sendMessage")
@@ -89,18 +90,18 @@ def stub_api
     ).to_return(status: 200, body: api_response_body.to_json, headers: {})
 end
 
-def stub_registro(email)
+def stub_registro(email, telegram_id)
   stub_request(:post, "#{ENV['API_URL']}/registrar")
     .with(
-      body: { email: }.to_json,
+      body: { email:, telegram_id: }.to_json,
       headers: { 'Content-Type' => 'application/json' }
     ).to_return(status: 200, body: { id: 123, email: }.to_json)
 end
 
-def registracion_exitosa(email)
+def registracion_exitosa(email, telegram_id)
   token = 'fake_token'
   when_i_send_text(token, "/registrar #{email}")
-  stub_registro(email)
+  stub_registro(email, telegram_id)
   then_i_get_text(token, 'Registración exitosa')
   BotClient.new(token).run_once
 end
@@ -184,6 +185,7 @@ describe 'BotClient' do
 
   it 'should register a patient and respond with success message' do
     email = 'paciente@example.com'
-    registracion_exitosa(email)
+    telegram_id = USER_ID
+    registracion_exitosa(email, telegram_id)
   end
 end

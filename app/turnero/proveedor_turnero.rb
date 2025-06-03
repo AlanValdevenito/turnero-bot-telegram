@@ -6,8 +6,8 @@ class ProveedorTurnero
     @api_url = api_url
   end
 
-  def crear_usuario(email)
-    response = Faraday.post("#{@api_url}/registrar", { email: }.to_json, { 'Content-Type' => 'application/json' })
+  def crear_usuario(email, telegram_id)
+    response = Faraday.post("#{@api_url}/registrar", { email:, telegram_id: }.to_json, { 'Content-Type' => 'application/json' })
 
     if response.success?
       JSON.parse(response.body)
