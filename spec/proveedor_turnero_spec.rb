@@ -9,19 +9,19 @@ describe 'ProveedorTurnero' do
   let(:telegram_id) { 1234 }
 
   def cuando_quiero_registrar_usuario(email, telegram_id)
-    stub_request(:post, "#{api_url}/registrar")
+    stub_request(:post, "#{api_url}/usuarios")
       .with(body: { email:, telegram_id: })
       .to_return(status: 200, body: { message: 'El paciente se registró existosamente' }.to_json, headers: { 'Content-Type' => 'application/json' })
   end
 
   def cuando_quiero_registrar_usuario_email_en_uso(email, telegram_id)
-    stub_request(:post, "#{api_url}/registrar")
+    stub_request(:post, "#{api_url}/usuarios")
       .with(body: { email:, telegram_id: })
       .to_return(status: 400, body: { error: 'El email ingresado ya está en uso' }.to_json, headers: { 'Content-Type' => 'application/json' })
   end
 
   def cuando_quiero_registrar_paciente_ya_registrado(email, telegram_id)
-    stub_request(:post, "#{api_url}/registrar")
+    stub_request(:post, "#{api_url}/usuarios")
       .with(body: { email:, telegram_id: })
       .to_return(status: 400, body: { error: 'El paciente ya está registrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
   end

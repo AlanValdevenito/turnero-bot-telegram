@@ -91,7 +91,7 @@ def stub_api
 end
 
 def stub_registro(email, telegram_id)
-  stub_request(:post, "#{ENV['API_URL']}/registrar")
+  stub_request(:post, "#{ENV['API_URL']}/usuarios")
     .with(
       body: { email:, telegram_id: }.to_json,
       headers: { 'Content-Type' => 'application/json' }
@@ -107,7 +107,7 @@ def registracion_exitosa(email, telegram_id)
 end
 
 def stub_email_en_uso(email, telegram_id)
-  stub_request(:post, "#{ENV['API_URL']}/registrar")
+  stub_request(:post, "#{ENV['API_URL']}/usuarios")
     .with(
       body: { email:, telegram_id: }.to_json,
       headers: { 'Content-Type' => 'application/json' }
@@ -123,7 +123,7 @@ def registro_falla_email_en_uso(email, telegram_id)
 end
 
 def stub_paciente_ya_registrado(email, telegram_id)
-  stub_request(:post, "#{ENV['API_URL']}/registrar")
+  stub_request(:post, "#{ENV['API_URL']}/usuarios")
     .with(
       body: { email:, telegram_id: }.to_json,
       headers: { 'Content-Type' => 'application/json' }
