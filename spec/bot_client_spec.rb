@@ -138,6 +138,13 @@ def registro_falla_paciente_registrado(email, telegram_id)
   BotClient.new(token).run_once
 end
 
+def expect_mensaje_de_ayuda(token)
+  then_i_get_text(token, <<~TEXT)
+    Comandos disponibles:
+    /registrar {email} - Registra tu email en el sistema
+  TEXT
+end
+
 describe 'BotClient' do
   it 'should get a /version message and respond with current version' do
     stub_api
@@ -204,15 +211,13 @@ describe 'BotClient' do
     app.run_once
   end
 
-  it 'should get an unknown message message and respond with Do not understand' do
+  it 'should get an unknown message and respond with help message' do
     token = 'fake_token'
 
     when_i_send_text(token, '/unknown')
-    then_i_get_text(token, 'Uh? No te entiendo! Me repetis la pregunta?')
+    expect_mensaje_de_ayuda(token)
 
-    app = BotClient.new(token)
-
-    app.run_once
+    BotClient.new(token).run_once
   end
 
   it 'should register a patient and respond with success message' do
