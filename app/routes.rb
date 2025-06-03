@@ -76,6 +76,11 @@ class Routes
   end
 
   default do |bot, message|
-    bot.api.send_message(chat_id: message.chat.id, text: 'Uh? No te entiendo! Me repetis la pregunta?')
+    help_text = <<~TEXT
+      Comandos disponibles:
+      /registrar {email} - Registra tu email en el sistema
+    TEXT
+
+    bot.api.send_message(chat_id: message.chat.id, text: help_text)
   end
 end
