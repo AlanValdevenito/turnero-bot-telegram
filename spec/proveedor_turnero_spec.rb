@@ -68,4 +68,11 @@ describe 'ProveedorTurnero' do
 
     expect { turnero.solicitar_medicos_disponibles }.to raise_error(ErrorAPIMedicosDisponiblesException)
   end
+
+  it 'maneja errores de conexión al solicitar médicos disponibles' do
+    stub_request(:get, "#{api_url}/turnos/medicos-disponibles")
+      .to_raise(Faraday::Error.new('Error de conexión'))
+
+    expect { turnero.solicitar_medicos_disponibles }.to raise_error(ErrorAPIMedicosDisponiblesException)
+  end
 end

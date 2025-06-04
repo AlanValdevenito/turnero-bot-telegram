@@ -27,6 +27,9 @@ class ProveedorTurnero
     else
       raise ErrorAPIMedicosDisponiblesException
     end
+  rescue Faraday::Error => e
+    puts "Error al solicitar médicos disponibles: #{e.message}"
+    raise ErrorAPIMedicosDisponiblesException
   end
 
   private
