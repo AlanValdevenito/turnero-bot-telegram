@@ -136,4 +136,24 @@ describe 'ProveedorTurnero' do
 
     expect { turnero.reservar_turno('123', '2024-06-05', '10:00', 1234) }.to raise_error(ErrorAPIReservarTurnoException)
   end
+
+  it 'verifica si un usuario está registrado' do
+    telegram_id = datos_usuario[:telegram_id]
+
+    # Stub para usuario registrado
+    stub_request(:get, "#{api_url}/usuarios/telegram/#{telegram_id}")
+      .to_return(status: 200, body: { id: 1, email: datos_usuario[:email], telegram_id: }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    expect(turnero.usuario_registrado?(telegram_id)).to be true
+  end
+
+  it 'verifica si un usuario no está registrado' do
+    telegram_id = datos_usuario[:telegram_id]
+
+    # Stub para usuario no registrado
+    stub_request(:get, "#{api_url}/usuarios/telegram/#{telegram_id}")
+      .to_return(status: 404, body: { error: 'Usuario no encontrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    expect(turnero.usuario_registrado?(telegram_id)).to be false
+  end
 end

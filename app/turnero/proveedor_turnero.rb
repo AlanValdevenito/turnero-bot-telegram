@@ -8,6 +8,13 @@ class ProveedorTurnero
     @api_url = api_url
   end
 
+  def usuario_registrado?(telegram_id)
+    response = Faraday.get("#{ENV['API_URL']}/usuarios/telegram/#{telegram_id}")
+    response.status == 200
+  rescue Faraday::Error
+    false
+  end
+
   def crear_usuario(email, telegram_id)
     payload = { email:, telegram_id: }.to_json
 
