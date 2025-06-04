@@ -42,6 +42,18 @@ class ProveedorTurnero
     raise ErrorAPITurnosDisponiblesException
   end
 
+  def reservar_turno(matricula, fecha, hora, telegram_id)
+    payload = { matricula:, fecha:, hora:, telegram_id: }.to_json
+    response = Faraday.post("#{@api_url}/turnos", payload, { 'Content-Type' => 'application/json' })
+    if response.success?
+      JSON.parse(response.body)
+    else
+      raise ErrorAPIReservarTurnoException
+    end
+  rescue Faraday::Error
+    raise ErrorAPIReservarTurnoException
+  end
+
   private
 
   def manejar_error(response)

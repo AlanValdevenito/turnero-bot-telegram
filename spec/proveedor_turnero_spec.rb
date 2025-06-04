@@ -37,6 +37,12 @@ describe 'ProveedorTurnero' do
       .to_return(status: 400, body: { error: 'El paciente ya está registrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
   end
 
+  def crear_turno_exitoso(matricula, fecha, hora, telegram_id)
+    stub_request(:post, "#{api_url}/turnos")
+      .with(body: { matricula:, fecha:, hora:, telegram_id: })
+      .to_return(status: 200, body: { message: 'Turno reservado exitosamente' }.to_json, headers: { 'Content-Type' => 'application/json' })
+  end
+
   it 'registra un usuario exitosamente' do
     response_body = { message: 'El paciente se registró existosamente' }.to_json
 
@@ -105,5 +111,29 @@ describe 'ProveedorTurnero' do
       .to_raise(Faraday::Error.new('Error de conexión'))
 
     expect { turnero.solicitar_turnos_disponibles(matricula, 'fake_especialidad') }.to raise_error(ErrorAPITurnosDisponiblesException)
+  end
+
+  it 'reserva un turno exitosamente' do
+    crear_turno_exitoso('123', '2024-06-05', '10:00', 1234)
+    response_body = { message: 'Turno reservado exitosamente' }.to_json
+    response = turnero.reservar_turno('123', '2024-06-05', '10:00', 1234)
+
+    expect(response).to eq(JSON.parse(response_body))
+  end
+
+  it 'maneja errores al reservar un turno' do
+    stub_request(:post, "#{api_url}/turnos")
+      .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', telegram_id: 1234 })
+      .to_return(status: 404, body: { error: 'Error al reservar el turno' }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    expect { turnero.reservar_turno('123', '2024-06-05', '10:00', 1234) }.to raise_error(ErrorAPIReservarTurnoException)
+  end
+
+  it 'maneja errores de conexión al reservar un turno' do
+    stub_request(:post, "#{api_url}/turnos")
+      .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', telegram_id: 1234 })
+      .to_raise(Faraday::Error.new('Error de conexión'))
+
+    expect { turnero.reservar_turno('123', '2024-06-05', '10:00', 1234) }.to raise_error(ErrorAPIReservarTurnoException)
   end
 end
