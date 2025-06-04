@@ -109,6 +109,7 @@ class Routes
     help_text = <<~TEXT
       Comandos disponibles:
       /registrar {email} - Registra tu email en el sistema
+      /pedir-turno - Solicita un turno médico
     TEXT
 
     bot.api.send_message(chat_id: message.chat.id, text: help_text)

@@ -153,6 +153,7 @@ def expect_mensaje_de_ayuda(token)
   then_i_get_text(token, <<~TEXT)
     Comandos disponibles:
     /registrar {email} - Registra tu email en el sistema
+    /pedir-turno - Solicita un turno médico
   TEXT
 end
 
