@@ -76,6 +76,9 @@ class Routes
     end
   end
 
+  on_message '/pedir-turno' do |bot, message|
+  end
+
   default do |bot, message|
     help_text = <<~TEXT
       Comandos disponibles:

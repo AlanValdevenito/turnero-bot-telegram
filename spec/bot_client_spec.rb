@@ -8,6 +8,11 @@ require "#{File.dirname(__FILE__)}/../app/bot_client"
 ENV['API_URL'] ||= 'http://web:3000'
 USER_ID = 141_733_544
 
+def run_bot_once(token)
+  app = BotClient.new(token)
+  app.run_once
+end
+
 def when_i_send_text(token, message_text)
   body = { "ok": true, "result": [{ "update_id": 693_981_718,
                                     "message": { "message_id": 11,
@@ -62,7 +67,17 @@ def then_i_get_text(token, message_text)
     .to_return(status: 200, body: body.to_json, headers: {})
 end
 
-def then_i_get_keyboard_message(token, message_text)
+def then_i_get_keyboard_message(token, message_text, options = nil)
+  # options: array de hashes [{text: 'Jon Snow', callback_data: '1'}, ...]
+  options ||= [
+    { text: 'Jon Snow', callback_data: '1' },
+    { text: 'Daenerys Targaryen', callback_data: '2' },
+    { text: 'Ned Stark', callback_data: '3' }
+  ]
+  # Por defecto, todos los botones en una sola fila
+  inline_keyboard = [options.map { |opt| { 'text' => opt[:text], 'callback_data' => opt[:callback_data] } }]
+  reply_markup = { 'inline_keyboard' => inline_keyboard }.to_json
+
   body = { "ok": true,
            "result": { "message_id": 12,
                        "from": { "id": 715_612_264, "is_bot": true, "first_name": 'fiuba-memo2-prueba', "username": 'fiuba_memo2_bot' },
@@ -71,9 +86,11 @@ def then_i_get_keyboard_message(token, message_text)
 
   stub_request(:post, "https://api.telegram.org/bot#{token}/sendMessage")
     .with(
-      body: { 'chat_id' => '141733544',
-              'reply_markup' => '{"inline_keyboard":[[{"text":"Jon Snow","callback_data":"1"},{"text":"Daenerys Targaryen","callback_data":"2"},{"text":"Ned Stark","callback_data":"3"}]]}',
-              'text' => 'Quien se queda con el trono?' }
+      body: {
+        'chat_id' => USER_ID.to_s,
+        'reply_markup' => reply_markup,
+        'text' => message_text
+      }
     )
     .to_return(status: 200, body: body.to_json, headers: {})
 end
@@ -146,6 +163,14 @@ def expect_mensaje_de_ayuda(token)
 end
 
 describe 'BotClient' do
+  let(:opciones_medicos) do
+    [
+      { text: '1. Carlos Sanchez', callback_data: 'matricula:1' },
+      { text: '2. Maria Perez', callback_data: 'matricula:2' },
+      { text: '3. Juan Ramirez', callback_data: 'matricula:3' }
+    ]
+  end
+
   it 'should get a /version message and respond with current version' do
     stub_api
     when_i_send_text('fake_token', '/version')
@@ -162,9 +187,7 @@ describe 'BotClient' do
     when_i_send_text(token, '/say_hi Emilio')
     then_i_get_text(token, 'Hola, Emilio')
 
-    app = BotClient.new(token)
-
-    app.run_once
+    run_bot_once(token)
   end
 
   it 'should get a /start message and respond with Hola' do
@@ -173,9 +196,15 @@ describe 'BotClient' do
     when_i_send_text(token, '/start')
     then_i_get_text(token, 'Hola, Emilio')
 
-    app = BotClient.new(token)
+    run_bot_once(token)
+  end
 
-    app.run_once
+  xit 'deberia recibir un mensaje /pedir-turno y responder con un inline keyboard' do
+    token = 'fake_token'
+    when_i_send_text(token, '/pedir-turno')
+    then_i_get_keyboard_message(token, 'Seleccione un Médico', opciones_medicos)
+
+    run_bot_once(token)
   end
 
   it 'should get a /stop message and respond with Chau' do
@@ -184,9 +213,7 @@ describe 'BotClient' do
     when_i_send_text(token, '/stop')
     then_i_get_text(token, 'Chau, egutter')
 
-    app = BotClient.new(token)
-
-    app.run_once
+    run_bot_once(token)
   end
 
   it 'should get a /tv message and respond with an inline keyboard' do
@@ -195,9 +222,7 @@ describe 'BotClient' do
     when_i_send_text(token, '/tv')
     then_i_get_keyboard_message(token, 'Quien se queda con el trono?')
 
-    app = BotClient.new(token)
-
-    app.run_once
+    run_bot_once(token)
   end
 
   it 'should get a "Quien se queda con el trono?" message and respond with' do
@@ -206,9 +231,7 @@ describe 'BotClient' do
     when_i_send_keyboard_updates(token, 'Quien se queda con el trono?', '2')
     then_i_get_text(token, 'A mi también me encantan los dragones!')
 
-    app = BotClient.new(token)
-
-    app.run_once
+    run_bot_once(token)
   end
 
   it 'should get an unknown message and respond with help message' do
