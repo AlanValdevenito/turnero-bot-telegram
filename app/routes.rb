@@ -81,17 +81,21 @@ class Routes
   on_response_to 'Seleccione un Médico' do |bot, message|
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     matricula, especialidad = message.data.split(':').last.split('-')
-    turnos = turnero.solicitar_turnos_disponibles(matricula, especialidad)
-    kb = turnos.map do |t|
-      [
-        Telegram::Bot::Types::InlineKeyboardButton.new(
-          text: "#{t['fecha']} - #{t['hora']}",
-          callback_data: "turno_seleccionado:#{t['fecha']}-#{t['hora']}-#{matricula}-#{especialidad}-#{message.from.id}"
-        )
-      ]
+    begin
+      turnos = turnero.solicitar_turnos_disponibles(matricula, especialidad)
+      kb = turnos.map do |t|
+        [
+          Telegram::Bot::Types::InlineKeyboardButton.new(
+            text: "#{t['fecha']} - #{t['hora']}",
+            callback_data: "turno_seleccionado:#{t['fecha']}-#{t['hora']}-#{matricula}-#{especialidad}-#{message.from.id}"
+          )
+        ]
+      end
+      markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
+      bot.api.send_message(chat_id: message.message.chat.id, text: 'Seleccione un turno', reply_markup: markup)
+    rescue ErrorAPITurnosDisponiblesException
+      bot.api.send_message(chat_id: message.message.chat.id, text: 'Error al obtener los turnos disponibles')
     end
-    markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
-    bot.api.send_message(chat_id: message.message.chat.id, text: 'Seleccione un turno', reply_markup: markup)
   end
 
   default do |bot, message|

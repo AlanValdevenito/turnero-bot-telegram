@@ -161,7 +161,7 @@ def stub_medicos_disponibles_exitoso(medicos)
     .to_return(status: 200, body: medicos.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
-def stub_medicos_disponibles_fallidos
+def stub_medicos_disponibles_fallido
   stub_request(:get, "#{ENV['API_URL']}/turnos/medicos-disponibles")
     .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
@@ -169,6 +169,11 @@ end
 def stub_turnos_disponibles_exitoso(turnos, matricula = '123')
   stub_request(:get, "#{ENV['API_URL']}/turnos/#{matricula}/disponibilidad")
     .to_return(status: 200, body: turnos.to_json, headers: { 'Content-Type' => 'application/json' })
+end
+
+def stub_turnos_disponibles_fallido(matricula = '123')
+  stub_request(:get, "#{ENV['API_URL']}/turnos/#{matricula}/disponibilidad")
+    .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
 describe 'BotClient' do
@@ -243,7 +248,7 @@ describe 'BotClient' do
 
   it 'muestra un mensaje de error si la API de médicos falla' do
     token = 'fake_token'
-    stub_medicos_disponibles_fallidos
+    stub_medicos_disponibles_fallido
 
     when_i_send_text(token, '/pedir-turno')
     then_i_get_text(token, 'Error al obtener la lista de médicos disponibles')
@@ -256,6 +261,14 @@ describe 'BotClient' do
     stub_turnos_disponibles_exitoso(turnos_disponibles, '123')
     when_i_send_keyboard_updates(token, 'Seleccione un Médico', 'turnos_medico:123-Clinica', opciones_medicos)
     then_i_get_keyboard_message(token, 'Seleccione un turno', opciones_turnos)
+    run_bot_once(token)
+  end
+
+  it 'muestra un mensaje de error si la API de turnos falla' do
+    token = 'fake_token'
+    stub_turnos_disponibles_fallido
+    when_i_send_keyboard_updates(token, 'Seleccione un Médico', 'turnos_medico:123-Clinica', opciones_medicos)
+    then_i_get_text(token, 'Error al obtener los turnos disponibles')
     run_bot_once(token)
   end
 
