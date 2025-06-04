@@ -330,6 +330,14 @@ describe 'BotClient' do
     run_bot_once(token)
   end
 
+  it 'deberia recibir un mensaje /pedir-turno y responder con que no hay médicos disponibles' do
+    stub_registrado(true)
+    stub_medicos_disponibles_exitoso([])
+    when_i_send_text('fake_token', '/pedir-turno')
+    then_i_get_text('fake_token', 'No hay médicos disponibles en este momento')
+    run_bot_once('fake_token')
+  end
+
   it 'should get a /stop message and respond with Chau' do
     token = 'fake_token'
 
