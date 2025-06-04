@@ -25,27 +25,35 @@ def when_i_send_text(token, message_text)
     .to_return(body: body.to_json, status: 200, headers: { 'Content-Length' => 3 })
 end
 
-def when_i_send_keyboard_updates(token, message_text, inline_selection)
+def when_i_send_keyboard_updates(token, message_text, inline_selection, buttons = nil)
+  # buttons: array de arrays de hashes, ej:
+  # [
+  #   [{ "text" => "1. Carlos Sanchez", "callback_data" => "turnos_medico:123-Clinica" }],
+  #   [{ "text" => "2. Maria Perez", "callback_data" => "turnos_medico:456-Pediatria" }]
+  # ]
+  buttons ||= [
+    [{ 'text' => 'Jon Snow', 'callback_data' => '1' }],
+    [{ 'text' => 'Daenerys Targaryen', 'callback_data' => '2' }],
+    [{ 'text' => 'Ned Stark', 'callback_data' => '3' }]
+  ]
+
   body = {
     "ok": true, "result": [{
       "update_id": 866_033_907,
-      "callback_query": { "id": '608740940475689651', "from": { "id": USER_ID, "is_bot": false, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "language_code": 'en' },
-                          "message": {
-                            "message_id": 626,
-                            "from": { "id": 715_612_264, "is_bot": true, "first_name": 'fiuba-memo2-prueba', "username": 'fiuba_memo2_bot' },
-                            "chat": { "id": USER_ID, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
-                            "date": 1_595_282_006,
-                            "text": message_text,
-                            "reply_markup": {
-                              "inline_keyboard": [
-                                [{ "text": 'Jon Snow', "callback_data": '1' }],
-                                [{ "text": 'Daenerys Targaryen', "callback_data": '2' }],
-                                [{ "text": 'Ned Stark', "callback_data": '3' }]
-                              ]
-                            }
-                          },
-                          "chat_instance": '2671782303129352872',
-                          "data": inline_selection }
+      "callback_query": {
+        "id": '608740940475689651',
+        "from": { "id": USER_ID, "is_bot": false, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "language_code": 'en' },
+        "message": {
+          "message_id": 626,
+          "from": { "id": 715_612_264, "is_bot": true, "first_name": 'fiuba-memo2-prueba', "username": 'fiuba_memo2_bot' },
+          "chat": { "id": USER_ID, "first_name": 'Emilio', "last_name": 'Gutter', "username": 'egutter', "type": 'private' },
+          "date": 1_595_282_006,
+          "text": message_text,
+          "reply_markup": { "inline_keyboard": buttons }
+        },
+        "chat_instance": '2671782303129352872',
+        "data": inline_selection
+      }
     }]
   }
 
