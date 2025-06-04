@@ -50,6 +50,10 @@ class Routes
 
   on_message '/pedir-turno' do |bot, message|
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    unless turnero.usuario_registrado?(message.from.id)
+      bot.api.send_message(chat_id: message.chat.id, text: 'Debe registrarse primero usando el comando /registrar {email}')
+      next
+    end
     medicos = turnero.solicitar_medicos_disponibles
 
     kb = medicos.map do |m|

@@ -3,6 +3,10 @@ class Turnero
     @proveedor_turnero = proveedor_turnero
   end
 
+  def usuario_registrado?(telegram_id)
+    @proveedor_turnero.usuario_registrado?(telegram_id)
+  end
+
   def registrar_paciente(email, telegram_id)
     @proveedor_turnero.crear_usuario(email, telegram_id)
   end

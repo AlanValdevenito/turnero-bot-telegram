@@ -200,6 +200,16 @@ def stub_reservar_turno_fallido
     .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
+def stub_registrado(exito)
+  if exito
+    stub_request(:get, "#{ENV['API_URL']}/usuarios/telegram/#{USER_ID}")
+      .to_return(status: 200, body: { id: 123, email: 'paciente@example.com', telegram_id: USER_ID }.to_json, headers: { 'Content-Type' => 'application/json' })
+  else
+    stub_request(:get, "#{ENV['API_URL']}/usuarios/telegram/#{USER_ID}")
+      .to_return(status: 404, body: { error: 'Usuario no encontrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
+  end
+end
+
 describe 'BotClient' do
   let(:opciones_medicos) do
     [
@@ -262,22 +272,29 @@ describe 'BotClient' do
   end
 
   it 'deberia recibir un mensaje /pedir-turno y responder con un inline keyboard' do
-    token = 'fake_token'
+    stub_registrado(true)
     stub_medicos_disponibles_exitoso(medicos_disponibles)
-    when_i_send_text(token, '/pedir-turno')
-    then_i_get_keyboard_message(token, 'Seleccione un Médico', opciones_medicos)
+    when_i_send_text('fake_token', '/pedir-turno')
+    then_i_get_keyboard_message('fake_token', 'Seleccione un Médico', opciones_medicos)
 
-    run_bot_once(token)
+    run_bot_once('fake_token')
+  end
+
+  it 'deberia recibir un mensaje /pedir-turno y mostrar un mensaje de error si no esta registrado' do
+    stub_registrado(false)
+    when_i_send_text('fake_token', '/pedir-turno')
+    then_i_get_text('fake_token', 'Debe registrarse primero usando el comando /registrar {email}')
+    run_bot_once('fake_token')
   end
 
   it 'muestra un mensaje de error si la API de médicos falla' do
-    token = 'fake_token'
+    stub_registrado(true)
     stub_medicos_disponibles_fallido
 
-    when_i_send_text(token, '/pedir-turno')
-    then_i_get_text(token, 'Error al obtener la lista de médicos disponibles')
+    when_i_send_text('fake_token', '/pedir-turno')
+    then_i_get_text('fake_token', 'Error al obtener la lista de médicos disponibles')
 
-    run_bot_once(token)
+    run_bot_once('fake_token')
   end
 
   it 'deberia recibir un mensaje Seleccione un Médico y responder con un inline keyboard' do
