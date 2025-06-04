@@ -73,13 +73,8 @@ end
 
 def then_i_get_keyboard_message(token, message_text, options = nil)
   # options: array de hashes [{text: 'Jon Snow', callback_data: '1'}, ...]
-  options ||= [
-    { text: 'Jon Snow', callback_data: '1' },
-    { text: 'Daenerys Targaryen', callback_data: '2' },
-    { text: 'Ned Stark', callback_data: '3' }
-  ]
-  # Por defecto, todos los botones en una sola fila
-  inline_keyboard = [options.map { |opt| { 'text' => opt[:text], 'callback_data' => opt[:callback_data] } }]
+
+  inline_keyboard = options.map { |opt| [{ 'text' => opt[:text], 'callback_data' => opt[:callback_data] }] }
   reply_markup = { 'inline_keyboard' => inline_keyboard }.to_json
 
   body = { "ok": true,
@@ -252,24 +247,6 @@ describe 'BotClient' do
 
     when_i_send_text(token, '/stop')
     then_i_get_text(token, 'Chau, egutter')
-
-    run_bot_once(token)
-  end
-
-  it 'should get a /tv message and respond with an inline keyboard' do
-    token = 'fake_token'
-
-    when_i_send_text(token, '/tv')
-    then_i_get_keyboard_message(token, 'Quien se queda con el trono?')
-
-    run_bot_once(token)
-  end
-
-  it 'should get a "Quien se queda con el trono?" message and respond with' do
-    token = 'fake_token'
-
-    when_i_send_keyboard_updates(token, 'Quien se queda con el trono?', '2')
-    then_i_get_text(token, 'A mi también me encantan los dragones!')
 
     run_bot_once(token)
   end

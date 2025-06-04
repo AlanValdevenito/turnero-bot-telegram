@@ -24,15 +24,6 @@ class Routes
     bot.api.send_message(chat_id: message.chat.id, text: "La hora es, #{Time.now}")
   end
 
-  on_message '/tv' do |bot, message|
-    kb = [Tv::Series.all.map do |tv_serie|
-      Telegram::Bot::Types::InlineKeyboardButton.new(text: tv_serie.name, callback_data: tv_serie.id.to_s)
-    end]
-    markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
-
-    bot.api.send_message(chat_id: message.chat.id, text: 'Quien se queda con el trono?', reply_markup: markup)
-  end
-
   on_message '/busqueda_centro' do |bot, message|
     kb = [[
       Telegram::Bot::Types::KeyboardButton.new(text: 'Compartime tu ubicacion', request_location: true)
@@ -45,11 +36,6 @@ class Routes
     response = "Ubicacion es Lat:#{message.location.latitude} - Long:#{message.location.longitude}"
     puts response
     bot.api.send_message(chat_id: message.chat.id, text: response)
-  end
-
-  on_response_to 'Quien se queda con el trono?' do |bot, message|
-    response = Tv::Series.handle_response message.data
-    bot.api.send_message(chat_id: message.message.chat.id, text: response)
   end
 
   on_message '/version' do |bot, message|
@@ -80,12 +66,12 @@ class Routes
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     medicos = turnero.solicitar_medicos_disponibles
 
-    kb = [medicos.map.with_index(1) do |m, _i|
-      Telegram::Bot::Types::InlineKeyboardButton.new(
+    kb = medicos.map do |m|
+      [Telegram::Bot::Types::InlineKeyboardButton.new(
         text: "#{m['nombre']} #{m['apellido']}",
         callback_data: "turnos_medico:#{m['matricula']}-#{m['especialidad']}"
-      )
-    end]
+      )]
+    end
     markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
     bot.api.send_message(chat_id: message.chat.id, text: 'Seleccione un Médico', reply_markup: markup)
   rescue ErrorAPIMedicosDisponiblesException
