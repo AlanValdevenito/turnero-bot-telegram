@@ -162,9 +162,14 @@ def expect_mensaje_de_ayuda(token)
   TEXT
 end
 
-def stub_medicos_disponibles(medicos)
+def stub_medicos_disponibles_exitoso(medicos)
   stub_request(:get, "#{ENV['API_URL']}/turnos/medicos-disponibles")
     .to_return(status: 200, body: medicos.to_json, headers: { 'Content-Type' => 'application/json' })
+end
+
+def stub_medicos_disponibles_fallidos
+  stub_request(:get, "#{ENV['API_URL']}/turnos/medicos-disponibles")
+    .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
 describe 'BotClient' do
@@ -214,9 +219,19 @@ describe 'BotClient' do
 
   it 'deberia recibir un mensaje /pedir-turno y responder con un inline keyboard' do
     token = 'fake_token'
-    stub_medicos_disponibles(medicos_disponibles)
+    stub_medicos_disponibles_exitoso(medicos_disponibles)
     when_i_send_text(token, '/pedir-turno')
     then_i_get_keyboard_message(token, 'Seleccione un Médico', opciones_medicos)
+
+    run_bot_once(token)
+  end
+
+  it 'muestra un mensaje de error si la API de médicos falla' do
+    token = 'fake_token'
+    stub_medicos_disponibles_fallidos
+
+    when_i_send_text(token, '/pedir-turno')
+    then_i_get_text(token, 'Error al obtener la lista de médicos disponibles')
 
     run_bot_once(token)
   end
