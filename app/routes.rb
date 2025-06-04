@@ -41,7 +41,7 @@ class Routes
     rescue EmailYaEnUsoException
       bot.api.send_message(chat_id: message.chat.id, text: 'El email ingresado ya está en uso')
     rescue PacienteYaRegistradoException
-      bot.api.send_message(chat_id: message.chat.id, text: 'El paciente ya se encuentra registrado')
+      bot.api.send_message(chat_id: message.chat.id, text: 'Ya se encuentra registrado')
     rescue StandardError => e
       puts "Error completo: #{e.message}"
       bot.api.send_message(chat_id: message.chat.id, text: 'Error al registrar el paciente')
@@ -51,7 +51,7 @@ class Routes
   on_message '/pedir-turno' do |bot, message|
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     unless turnero.usuario_registrado?(message.from.id)
-      bot.api.send_message(chat_id: message.chat.id, text: 'Debe registrarse primero usando el comando /registrar {email}')
+      bot.api.send_message(chat_id: message.chat.id, text: 'No está registrado, use el comando /registrar {email}')
       next
     end
     medicos = turnero.solicitar_medicos_disponibles
@@ -86,7 +86,7 @@ class Routes
       markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
       bot.api.send_message(chat_id: message.message.chat.id, text: 'Seleccione un turno', reply_markup: markup)
     rescue NohayTurnosDisponiblesException
-      bot.api.send_message(chat_id: message.message.chat.id, text: 'No hay turnos disponibles para este médico por el momento')
+      bot.api.send_message(chat_id: message.message.chat.id, text: 'No hay turnos disponibles para este médico')
     rescue ErrorAPITurnosDisponiblesException
       bot.api.send_message(chat_id: message.message.chat.id, text: 'Error al obtener los turnos disponibles')
     end
@@ -103,7 +103,7 @@ class Routes
     telegram_id = data[6]        # "7158408552"
     turno = turnero.reservar_turno(matricula, fecha, hora, telegram_id)
     puts "Turno reservado: #{turno.inspect}"
-    response = "Turno reservado exitosamente:\nFecha: #{turno['fecha']}\nHora: #{turno['hora']}\nMédico: #{turno['medico']['nombre']} #{turno['medico']['apellido']}\nEspecialidad: #{especialidad}"
+    response = "Turno agendado exitosamente:\nFecha: #{turno['fecha']}\nHora: #{turno['hora']}\nMédico: #{turno['medico']['nombre']} #{turno['medico']['apellido']}\nEspecialidad: #{especialidad}"
     bot.api.send_message(chat_id: message.message.chat.id, text: response)
   rescue ErrorAPIReservarTurnoException
     bot.api.send_message(chat_id: message.message.chat.id, text: 'Error al reservar el turno')

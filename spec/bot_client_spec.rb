@@ -145,7 +145,7 @@ def registro_falla_paciente_registrado(email, telegram_id)
   token = 'fake_token'
   when_i_send_text(token, "/registrar #{email}")
   stub_paciente_ya_registrado(email, telegram_id)
-  then_i_get_text(token, 'El paciente ya se encuentra registrado')
+  then_i_get_text(token, 'Ya se encuentra registrado')
   BotClient.new(token).run_once
 end
 
@@ -284,7 +284,7 @@ describe 'BotClient' do
   it 'deberia recibir un mensaje /pedir-turno y mostrar un mensaje de error si no esta registrado' do
     stub_registrado(false)
     when_i_send_text('fake_token', '/pedir-turno')
-    then_i_get_text('fake_token', 'Debe registrarse primero usando el comando /registrar {email}')
+    then_i_get_text('fake_token', 'No está registrado, use el comando /registrar {email}')
     run_bot_once('fake_token')
   end
 
@@ -318,7 +318,7 @@ describe 'BotClient' do
     token = 'fake_token'
     stub_reservar_turno_exitoso
     when_i_send_keyboard_updates(token, 'Seleccione un turno', 'turno_seleccionado:2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
-    then_i_get_text(token, "Turno reservado exitosamente:\nFecha: 2023-10-01\nHora: 10:00\nMédico: Carlos Sanchez\nEspecialidad: Clinica")
+    then_i_get_text(token, "Turno agendado exitosamente:\nFecha: 2023-10-01\nHora: 10:00\nMédico: Carlos Sanchez\nEspecialidad: Clinica")
     run_bot_once(token)
   end
 
@@ -341,7 +341,7 @@ describe 'BotClient' do
   it 'deberia recibir un mensaje Seleccione un Médico y responder con un mensaje de error si no hay turnos disponibles' do
     stub_turnos_disponibles_exitoso([])
     when_i_send_keyboard_updates('fake_token', 'Seleccione un Médico', 'turnos_medico:123-Clinica', opciones_medicos)
-    then_i_get_text('fake_token', 'No hay turnos disponibles para este médico por el momento')
+    then_i_get_text('fake_token', 'No hay turnos disponibles para este médico')
     run_bot_once('fake_token')
   end
 
