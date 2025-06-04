@@ -97,6 +97,8 @@ class Routes
     puts "Turno reservado: #{turno.inspect}"
     response = "Turno reservado exitosamente:\nFecha: #{turno['fecha']}\nHora: #{turno['hora']}\nMédico: #{turno['medico']['nombre']} #{turno['medico']['apellido']}\nEspecialidad: #{especialidad}"
     bot.api.send_message(chat_id: message.message.chat.id, text: response)
+  rescue ErrorAPIReservarTurnoException
+    bot.api.send_message(chat_id: message.message.chat.id, text: 'Error al reservar el turno')
   end
 
   default do |bot, message|

@@ -191,6 +191,15 @@ def stub_reservar_turno_exitoso
     }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
+def stub_reservar_turno_fallido
+  stub_request(:post, "#{ENV['API_URL']}/turnos")
+    .with(
+      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', telegram_id: USER_ID.to_s }.to_json,
+      headers: { 'Content-Type' => 'application/json' }
+    )
+    .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
+end
+
 describe 'BotClient' do
   let(:opciones_medicos) do
     [
@@ -292,6 +301,14 @@ describe 'BotClient' do
     stub_reservar_turno_exitoso
     when_i_send_keyboard_updates(token, 'Seleccione un turno', 'turno_seleccionado:2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
     then_i_get_text(token, "Turno reservado exitosamente:\nFecha: 2023-10-01\nHora: 10:00\nMédico: Carlos Sanchez\nEspecialidad: Clinica")
+    run_bot_once(token)
+  end
+
+  it 'muestra un mensaje de error si la API de reservar turno falla' do
+    token = 'fake_token'
+    stub_reservar_turno_fallido
+    when_i_send_keyboard_updates(token, 'Seleccione un turno', 'turno_seleccionado:2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
+    then_i_get_text(token, 'Error al reservar el turno')
     run_bot_once(token)
   end
 
