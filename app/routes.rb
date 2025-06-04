@@ -85,6 +85,8 @@ class Routes
       end
       markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
       bot.api.send_message(chat_id: message.message.chat.id, text: 'Seleccione un turno', reply_markup: markup)
+    rescue NohayTurnosDisponiblesException
+      bot.api.send_message(chat_id: message.message.chat.id, text: 'No hay turnos disponibles para este médico por el momento')
     rescue ErrorAPITurnosDisponiblesException
       bot.api.send_message(chat_id: message.message.chat.id, text: 'Error al obtener los turnos disponibles')
     end
