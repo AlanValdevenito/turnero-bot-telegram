@@ -179,9 +179,9 @@ end
 describe 'BotClient' do
   let(:opciones_medicos) do
     [
-      { text: '1. Carlos Sanchez', callback_data: 'turnos_medico:123-Clinica' },
-      { text: '2. Maria Perez', callback_data: 'turnos_medico:456-Pediatria' },
-      { text: '3. Juan Ramirez', callback_data: 'turnos_medico:789-Traumatologia' }
+      { text: 'Carlos Sanchez', callback_data: 'turnos_medico:123-Clinica' },
+      { text: 'Maria Perez', callback_data: 'turnos_medico:456-Pediatria' },
+      { text: 'Juan Ramirez', callback_data: 'turnos_medico:789-Traumatologia' }
     ]
   end
 

@@ -80,9 +80,9 @@ class Routes
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     medicos = turnero.solicitar_medicos_disponibles
 
-    kb = [medicos.map.with_index(1) do |m, i|
+    kb = [medicos.map.with_index(1) do |m, _i|
       Telegram::Bot::Types::InlineKeyboardButton.new(
-        text: "#{i}. #{m['nombre']} #{m['apellido']}",
+        text: "#{m['nombre']} #{m['apellido']}",
         callback_data: "turnos_medico:#{m['matricula']}-#{m['especialidad']}"
       )
     end]

@@ -1,7 +1,7 @@
 require 'json'
 require_relative 'excepciones/email_en_uso_exception'
 require_relative 'excepciones/paciente_registrado_exception'
-require_relative 'excepciones/error_api_medicos_disponibles'
+require_relative 'excepciones/errores_api'
 
 class ProveedorTurnero
   def initialize(api_url)
@@ -29,6 +29,17 @@ class ProveedorTurnero
     end
   rescue Faraday::Error
     raise ErrorAPIMedicosDisponiblesException
+  end
+
+  def solicitar_turnos_disponibles(matricula, _especialidad)
+    response = Faraday.get("#{@api_url}/turnos/#{matricula}/disponibilidad")
+    if response.success?
+      JSON.parse(response.body)
+    else
+      raise ErrorAPITurnosDisponiblesException
+    end
+  rescue Faraday::Error
+    raise ErrorAPITurnosDisponiblesException
   end
 
   private
