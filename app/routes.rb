@@ -77,6 +77,17 @@ class Routes
   end
 
   on_message '/pedir-turno' do |bot, message|
+    proveedor = ProveedorTurnero.new(ENV['API_URL'])
+    medicos = proveedor.solicitar_medicos_disponibles
+
+    kb = [medicos.map.with_index(1) do |m, i|
+      Telegram::Bot::Types::InlineKeyboardButton.new(
+        text: "#{i}. #{m['nombre']} #{m['apellido']}",
+        callback_data: "turnos_medico:#{m['matricula']}-#{m['especialidad']}"
+      )
+    end]
+    markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
+    bot.api.send_message(chat_id: message.chat.id, text: 'Seleccione un Médico', reply_markup: markup)
   end
 
   default do |bot, message|

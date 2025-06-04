@@ -162,12 +162,25 @@ def expect_mensaje_de_ayuda(token)
   TEXT
 end
 
+def stub_medicos_disponibles(medicos)
+  stub_request(:get, "#{ENV['API_URL']}/turnos/medicos-disponibles")
+    .to_return(status: 200, body: medicos.to_json, headers: { 'Content-Type' => 'application/json' })
+end
+
 describe 'BotClient' do
   let(:opciones_medicos) do
     [
-      { text: '1. Carlos Sanchez', callback_data: 'matricula:1' },
-      { text: '2. Maria Perez', callback_data: 'matricula:2' },
-      { text: '3. Juan Ramirez', callback_data: 'matricula:3' }
+      { text: '1. Carlos Sanchez', callback_data: 'turnos_medico:123-Clinica' },
+      { text: '2. Maria Perez', callback_data: 'turnos_medico:456-Pediatria' },
+      { text: '3. Juan Ramirez', callback_data: 'turnos_medico:789-Traumatologia' }
+    ]
+  end
+
+  let(:medicos_disponibles) do
+    [
+      { 'nombre' => 'Carlos', 'apellido' => 'Sanchez', 'matricula' => '123', 'especialidad' => 'Clinica' },
+      { 'nombre' => 'Maria', 'apellido' => 'Perez', 'matricula' => '456', 'especialidad' => 'Pediatria' },
+      { 'nombre' => 'Juan', 'apellido' => 'Ramirez', 'matricula' => '789', 'especialidad' => 'Traumatologia' }
     ]
   end
 
@@ -199,8 +212,9 @@ describe 'BotClient' do
     run_bot_once(token)
   end
 
-  xit 'deberia recibir un mensaje /pedir-turno y responder con un inline keyboard' do
+  it 'deberia recibir un mensaje /pedir-turno y responder con un inline keyboard' do
     token = 'fake_token'
+    stub_medicos_disponibles(medicos_disponibles)
     when_i_send_text(token, '/pedir-turno')
     then_i_get_keyboard_message(token, 'Seleccione un Médico', opciones_medicos)
 
