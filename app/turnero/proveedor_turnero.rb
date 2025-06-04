@@ -1,6 +1,7 @@
 require 'json'
 require_relative 'excepciones/email_en_uso_exception'
 require_relative 'excepciones/paciente_registrado_exception'
+require_relative 'excepciones/error_api_medicos_disponibles'
 
 class ProveedorTurnero
   def initialize(api_url)
@@ -21,7 +22,11 @@ class ProveedorTurnero
 
   def solicitar_medicos_disponibles
     response = Faraday.get("#{@api_url}/turnos/medicos-disponibles")
-    return JSON.parse(response.body) if response.success?
+    if response.success?
+      JSON.parse(response.body)
+    else
+      raise ErrorAPIMedicosDisponiblesException
+    end
   end
 
   private

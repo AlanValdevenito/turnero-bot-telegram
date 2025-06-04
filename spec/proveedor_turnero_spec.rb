@@ -61,4 +61,11 @@ describe 'ProveedorTurnero' do
 
     expect(response).to eq(medicos_disponibles)
   end
+
+  it 'maneja errores al solicitar médicos disponibles' do
+    stub_request(:get, "#{api_url}/turnos/medicos-disponibles")
+      .to_return(status: 500, body: { error: 'Error interno del servidor' }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    expect { turnero.solicitar_medicos_disponibles }.to raise_error(ErrorAPIMedicosDisponiblesException)
+  end
 end
