@@ -77,8 +77,8 @@ class Routes
   end
 
   on_message '/pedir-turno' do |bot, message|
-    proveedor = ProveedorTurnero.new(ENV['API_URL'])
-    medicos = proveedor.solicitar_medicos_disponibles
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    medicos = turnero.solicitar_medicos_disponibles
 
     kb = [medicos.map.with_index(1) do |m, i|
       Telegram::Bot::Types::InlineKeyboardButton.new(
