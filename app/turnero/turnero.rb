@@ -1,3 +1,5 @@
+require_relative 'excepciones/no_hay_disponibilidad'
+
 class Turnero
   def initialize(proveedor_turnero)
     @proveedor_turnero = proveedor_turnero
@@ -12,7 +14,10 @@ class Turnero
   end
 
   def solicitar_medicos_disponibles
-    @proveedor_turnero.solicitar_medicos_disponibles
+    medicos = @proveedor_turnero.solicitar_medicos_disponibles
+    raise NoHayMedicosDisponiblesException if medicos.nil? || medicos.empty?
+
+    medicos
   end
 
   def solicitar_turnos_disponibles(matricula, especialidad)

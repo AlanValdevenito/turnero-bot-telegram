@@ -1,0 +1,2 @@
+class NoHayMedicosDisponiblesException < StandardError
+end

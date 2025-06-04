@@ -21,4 +21,9 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:crear_usuario).and_raise(PacienteYaRegistradoException)
     expect { turnero.registrar_paciente(email, telegram_id) }.to raise_error(PacienteYaRegistradoException)
   end
+
+  it 'da error si no hay medicos disponibles' do
+    allow(proveedor_mock).to receive(:solicitar_medicos_disponibles).and_return(nil)
+    expect { turnero.solicitar_medicos_disponibles }.to raise_error(NoHayMedicosDisponiblesException)
+  end
 end
