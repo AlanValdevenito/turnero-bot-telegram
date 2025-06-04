@@ -19,6 +19,11 @@ class ProveedorTurnero
     end
   end
 
+  def solicitar_medicos_disponibles
+    response = Faraday.get("#{@api_url}/turnos/medicos-disponibles")
+    return JSON.parse(response.body) if response.success?
+  end
+
   private
 
   def manejar_error(response)

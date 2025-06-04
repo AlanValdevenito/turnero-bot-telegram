@@ -7,6 +7,12 @@ describe 'ProveedorTurnero' do
   let(:turnero) { ProveedorTurnero.new(api_url) }
   let(:email) { 'test@test.com' }
   let(:telegram_id) { 1234 }
+  let(:medicos_disponibles) do
+    [
+      { 'nombre' => 'Carlos', 'apellido' => 'Sanchez', 'matricula' => '123', 'especialidad' => 'Clínica' },
+      { 'nombre' => 'Maria', 'apellido' => 'Perez', 'matricula' => '456', 'especialidad' => 'Pediatría' }
+    ]
+  end
 
   def cuando_quiero_registrar_usuario(email, telegram_id)
     stub_request(:post, "#{api_url}/usuarios")
@@ -45,5 +51,14 @@ describe 'ProveedorTurnero' do
     cuando_quiero_registrar_paciente_ya_registrado(email, telegram_id)
 
     expect { turnero.crear_usuario(email, telegram_id) }.to raise_error(PacienteYaRegistradoException)
+  end
+
+  it 'obtiene la lista de médicos disponibles con todos los campos' do
+    stub_request(:get, "#{api_url}/turnos/medicos-disponibles")
+      .to_return(status: 200, body: medicos_disponibles.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    response = turnero.solicitar_medicos_disponibles
+
+    expect(response).to eq(medicos_disponibles)
   end
 end
