@@ -24,20 +24,6 @@ class Routes
     bot.api.send_message(chat_id: message.chat.id, text: "La hora es, #{Time.now}")
   end
 
-  on_message '/busqueda_centro' do |bot, message|
-    kb = [[
-      Telegram::Bot::Types::KeyboardButton.new(text: 'Compartime tu ubicacion', request_location: true)
-    ]]
-    markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(keyboard: kb)
-    bot.api.send_message(chat_id: message.chat.id, text: 'Busqueda por ubicacion', reply_markup: markup)
-  end
-
-  on_location_response do |bot, message|
-    response = "Ubicacion es Lat:#{message.location.latitude} - Long:#{message.location.longitude}"
-    puts response
-    bot.api.send_message(chat_id: message.chat.id, text: response)
-  end
-
   on_message '/version' do |bot, message|
     response_version = Faraday.new("#{ENV['API_URL']}/version").get
     api_version = JSON.parse(response_version.body)['version']
@@ -99,6 +85,18 @@ class Routes
   end
 
   on_response_to 'Seleccione un turno' do |bot, message|
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    puts "Datos del mensaje: #{message.data}"
+    data = message.data.split(':', 2).last.split('-')
+    fecha = data[0..2].join('-') # "2025-06-05"
+    hora = data[3]               # "08:10"
+    matricula = data[4]          # "92"
+    especialidad = data[5]       # "Traumatologia"
+    telegram_id = data[6]        # "7158408552"
+    turno = turnero.reservar_turno(matricula, fecha, hora, telegram_id)
+    puts "Turno reservado: #{turno.inspect}"
+    response = "Turno reservado exitosamente:\nFecha: #{turno['fecha']}\nHora: #{turno['hora']}\nMédico: #{turno['medico']['nombre']} #{turno['medico']['apellido']}\nEspecialidad: #{especialidad}"
+    bot.api.send_message(chat_id: message.message.chat.id, text: response)
   end
 
   default do |bot, message|

@@ -14,4 +14,8 @@ class Turnero
   def solicitar_turnos_disponibles(matricula, especialidad)
     @proveedor_turnero.solicitar_turnos_disponibles(matricula, especialidad)
   end
+
+  def reservar_turno(matricula, fecha, hora, telegram_id)
+    @proveedor_turnero.reservar_turno(matricula, fecha, hora, telegram_id)
+  end
 end
