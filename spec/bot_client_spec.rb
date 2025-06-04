@@ -26,11 +26,6 @@ def when_i_send_text(token, message_text)
 end
 
 def when_i_send_keyboard_updates(token, message_text, inline_selection, buttons = nil)
-  buttons ||= [
-    { 'text' => 'Jon Snow', 'callback_data' => '1' },
-    { 'text' => 'Daenerys Targaryen', 'callback_data' => '2' },
-    { 'text' => 'Ned Stark', 'callback_data' => '3' }
-  ]
   buttons = buttons.map { |btn| [btn] } if buttons.any? && !buttons.first.is_a?(Array)
 
   body = {
@@ -171,6 +166,11 @@ def stub_medicos_disponibles_fallidos
     .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
+def stub_turnos_disponibles_exitoso(turnos, matricula = '123')
+  stub_request(:get, "#{ENV['API_URL']}/turnos/#{matricula}/disponibilidad")
+    .to_return(status: 200, body: turnos.to_json, headers: { 'Content-Type' => 'application/json' })
+end
+
 describe 'BotClient' do
   let(:opciones_medicos) do
     [
@@ -185,6 +185,22 @@ describe 'BotClient' do
       { 'nombre' => 'Carlos', 'apellido' => 'Sanchez', 'matricula' => '123', 'especialidad' => 'Clinica' },
       { 'nombre' => 'Maria', 'apellido' => 'Perez', 'matricula' => '456', 'especialidad' => 'Pediatria' },
       { 'nombre' => 'Juan', 'apellido' => 'Ramirez', 'matricula' => '789', 'especialidad' => 'Traumatologia' }
+    ]
+  end
+
+  let(:opciones_turnos) do
+    [
+      { text: '2023-10-01 - 10:00', callback_data: 'turno_seleccionado:2023-10-01-10:00-123-Clinica-141733544' },
+      { text: '2023-10-01 - 11:00', callback_data: 'turno_seleccionado:2023-10-01-11:00-123-Clinica-141733544' },
+      { text: '2023-10-01 - 12:00', callback_data: 'turno_seleccionado:2023-10-01-12:00-123-Clinica-141733544' }
+    ]
+  end
+
+  let(:turnos_disponibles) do
+    [
+      { 'fecha' => '2023-10-01', 'hora' => '10:00', 'matricula' => '123', 'especialidad' => 'Clinica' },
+      { 'fecha' => '2023-10-01', 'hora' => '11:00', 'matricula' => '123', 'especialidad' => 'Clinica' },
+      { 'fecha' => '2023-10-01', 'hora' => '12:00', 'matricula' => '123', 'especialidad' => 'Clinica' }
     ]
   end
 
@@ -235,10 +251,11 @@ describe 'BotClient' do
     run_bot_once(token)
   end
 
-  xit 'deberia recibir un mensaje Seleccione un Médico y responder con un inline keyboard' do
+  it 'deberia recibir un mensaje Seleccione un Médico y responder con un inline keyboard' do
     token = 'fake_token'
+    stub_turnos_disponibles_exitoso(turnos_disponibles, '123')
     when_i_send_keyboard_updates(token, 'Seleccione un Médico', 'turnos_medico:123-Clinica', opciones_medicos)
-    then_i_get_keyboard_message(token, 'Seleccione un Turno', opciones_turnos)
+    then_i_get_keyboard_message(token, 'Seleccione un turno', opciones_turnos)
     run_bot_once(token)
   end
 
