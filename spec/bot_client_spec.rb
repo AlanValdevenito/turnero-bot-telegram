@@ -272,6 +272,14 @@ describe 'BotClient' do
     run_bot_once(token)
   end
 
+  xit 'deberia recibir un mensaje Seleccione un turno y responder con un mensaje de confirmación' do
+    token = 'fake_token'
+    stub_reservar_turno_exitoso
+    when_i_send_keyboard_updates(token, 'Seleccione un turno', 'turno_seleccionado:2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
+    then_i_get_text(token, 'Turno reservado exitosamente para el 2023-10-01 a las 10:00 con el médico Carlos Sanchez (Clinica)')
+    run_bot_once(token)
+  end
+
   it 'should get a /stop message and respond with Chau' do
     token = 'fake_token'
 

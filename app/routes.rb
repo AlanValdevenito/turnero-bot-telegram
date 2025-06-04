@@ -98,6 +98,9 @@ class Routes
     end
   end
 
+  on_response_to 'Seleccione un turno' do |bot, message|
+  end
+
   default do |bot, message|
     help_text = <<~TEXT
       Comandos disponibles:
