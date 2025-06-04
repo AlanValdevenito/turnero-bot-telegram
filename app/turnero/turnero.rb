@@ -21,7 +21,10 @@ class Turnero
   end
 
   def solicitar_turnos_disponibles(matricula, especialidad)
-    @proveedor_turnero.solicitar_turnos_disponibles(matricula, especialidad)
+    turnos = @proveedor_turnero.solicitar_turnos_disponibles(matricula, especialidad)
+    raise NohayTurnosDisponiblesException if turnos.nil? || turnos.empty?
+
+    turnos
   end
 
   def reservar_turno(matricula, fecha, hora, telegram_id)

@@ -26,4 +26,9 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:solicitar_medicos_disponibles).and_return(nil)
     expect { turnero.solicitar_medicos_disponibles }.to raise_error(NoHayMedicosDisponiblesException)
   end
+
+  it 'da error si no hay turnos disponibles' do
+    allow(proveedor_mock).to receive(:solicitar_turnos_disponibles).and_return(nil)
+    expect { turnero.solicitar_turnos_disponibles('12345', 'Cardiologia') }.to raise_error(NohayTurnosDisponiblesException)
+  end
 end
