@@ -26,16 +26,12 @@ def when_i_send_text(token, message_text)
 end
 
 def when_i_send_keyboard_updates(token, message_text, inline_selection, buttons = nil)
-  # buttons: array de arrays de hashes, ej:
-  # [
-  #   [{ "text" => "1. Carlos Sanchez", "callback_data" => "turnos_medico:123-Clinica" }],
-  #   [{ "text" => "2. Maria Perez", "callback_data" => "turnos_medico:456-Pediatria" }]
-  # ]
   buttons ||= [
-    [{ 'text' => 'Jon Snow', 'callback_data' => '1' }],
-    [{ 'text' => 'Daenerys Targaryen', 'callback_data' => '2' }],
-    [{ 'text' => 'Ned Stark', 'callback_data' => '3' }]
+    { 'text' => 'Jon Snow', 'callback_data' => '1' },
+    { 'text' => 'Daenerys Targaryen', 'callback_data' => '2' },
+    { 'text' => 'Ned Stark', 'callback_data' => '3' }
   ]
+  buttons = buttons.map { |btn| [btn] } if buttons.any? && !buttons.first.is_a?(Array)
 
   body = {
     "ok": true, "result": [{
@@ -241,6 +237,13 @@ describe 'BotClient' do
     when_i_send_text(token, '/pedir-turno')
     then_i_get_text(token, 'Error al obtener la lista de médicos disponibles')
 
+    run_bot_once(token)
+  end
+
+  xit 'deberia recibir un mensaje Seleccione un Médico y responder con un inline keyboard' do
+    token = 'fake_token'
+    when_i_send_keyboard_updates(token, 'Seleccione un Médico', 'turnos_medico:123-Clinica', opciones_medicos)
+    then_i_get_keyboard_message(token, 'Seleccione un Turno', opciones_turnos)
     run_bot_once(token)
   end
 

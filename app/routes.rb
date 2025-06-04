@@ -92,6 +92,9 @@ class Routes
     bot.api.send_message(chat_id: message.chat.id, text: 'Error al obtener la lista de médicos disponibles')
   end
 
+  on_response_to 'Seleccione un Médico' do |bot, message|
+  end
+
   default do |bot, message|
     help_text = <<~TEXT
       Comandos disponibles:
