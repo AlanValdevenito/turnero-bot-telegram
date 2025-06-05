@@ -21,10 +21,6 @@ class Routes
     bot.api.send_message(chat_id: message.chat.id, text: "Chau, #{message.from.username}")
   end
 
-  on_message '/time' do |bot, message|
-    bot.api.send_message(chat_id: message.chat.id, text: "La hora es, #{Time.now}")
-  end
-
   on_message '/version' do |bot, message|
     response_version = Faraday.new("#{ENV['API_URL']}/version").get
     api_version = JSON.parse(response_version.body)['version']
@@ -34,15 +30,16 @@ class Routes
 
   on_message_pattern %r{/registrar (?<email>.*)} do |bot, message, args|
     email = args['email']
-    telegram_id = message.from.id
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     begin
-      turnero.registrar_paciente(email, telegram_id)
+      turnero.registrar_paciente(email, message.from.id)
       bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_REGISTRO_EXITOSO)
     rescue EmailYaEnUsoException
       bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_EMAIL_EN_USO)
     rescue PacienteYaRegistradoException
       bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_YA_REGISTRADO)
+    rescue ErrorConexionAPI
+      bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_ERROR_GENERAL)
     rescue StandardError => e
       puts "Error completo: #{e.message}"
       bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_ERROR_GENERAL)
@@ -93,6 +90,8 @@ class Routes
       bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_NO_TURNOS)
     rescue ErrorAPITurnosDisponiblesException
       bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_TURNOS)
+    rescue ErrorConexionAPI
+      bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_GENERAL)
     end
   end
 
@@ -109,6 +108,8 @@ class Routes
     bot.api.send_message(chat_id: message.message.chat.id, text: response)
   rescue ErrorAPIReservarTurnoException
     bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_RESERVA)
+  rescue ErrorConexionAPI
+    bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_GENERAL)
   end
 
   default do |bot, message|

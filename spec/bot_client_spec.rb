@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'web_mock'
 require_relative '../app/constantes/mensajes'
+require_relative 'stubs/stubs'
 # Uncomment to use VCR
 # require 'vcr_helper'
 
@@ -90,26 +91,6 @@ def then_i_get_keyboard_message(token, message_text, options = nil)
     .to_return(status: 200, body: body.to_json, headers: {})
 end
 
-def stub_api
-  api_response_body = { "version": '0.0.1' }
-  stub_request(:get, "#{ENV['API_URL']}/version")
-    .with(
-      headers: {
-        'Accept' => '*/*',
-        'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-        'User-Agent' => 'Faraday v2.7.4'
-      }
-    ).to_return(status: 200, body: api_response_body.to_json, headers: {})
-end
-
-def stub_registro(email, telegram_id)
-  stub_request(:post, "#{ENV['API_URL']}/usuarios")
-    .with(
-      body: { email:, telegram_id: }.to_json,
-      headers: { 'Content-Type' => 'application/json' }
-    ).to_return(status: 200, body: { id: 123, email: }.to_json)
-end
-
 def registracion_exitosa(email, telegram_id)
   token = 'fake_token'
   when_i_send_text(token, "/registrar #{email}")
@@ -118,28 +99,12 @@ def registracion_exitosa(email, telegram_id)
   BotClient.new(token).run_once
 end
 
-def stub_email_en_uso(email, telegram_id)
-  stub_request(:post, "#{ENV['API_URL']}/usuarios")
-    .with(
-      body: { email:, telegram_id: }.to_json,
-      headers: { 'Content-Type' => 'application/json' }
-    ).to_return(status: 400, body: { error: 'El email ingresado ya está en uso' }.to_json)
-end
-
 def registro_falla_email_en_uso(email, telegram_id)
   token = 'fake_token'
   when_i_send_text(token, "/registrar #{email}")
   stub_email_en_uso(email, telegram_id)
   then_i_get_text(token, 'El email ingresado ya está en uso')
   BotClient.new(token).run_once
-end
-
-def stub_paciente_ya_registrado(email, telegram_id)
-  stub_request(:post, "#{ENV['API_URL']}/usuarios")
-    .with(
-      body: { email:, telegram_id: }.to_json,
-      headers: { 'Content-Type' => 'application/json' }
-    ).to_return(status: 400, body: { error: 'El paciente ya se encuentra registrado' }.to_json)
 end
 
 def registro_falla_paciente_registrado(email, telegram_id)
@@ -152,65 +117,6 @@ end
 
 def expect_mensaje_de_ayuda(token)
   then_i_get_text(token, MENSAJE_AYUDA)
-end
-
-def stub_medicos_disponibles_exitoso(medicos)
-  stub_request(:get, "#{ENV['API_URL']}/turnos/medicos-disponibles")
-    .to_return(status: 200, body: medicos.to_json, headers: { 'Content-Type' => 'application/json' })
-end
-
-def stub_medicos_disponibles_fallido
-  stub_request(:get, "#{ENV['API_URL']}/turnos/medicos-disponibles")
-    .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
-end
-
-def stub_turnos_disponibles_exitoso(turnos, matricula = '123')
-  stub_request(:get, "#{ENV['API_URL']}/turnos/#{matricula}/disponibilidad")
-    .to_return(status: 200, body: turnos.to_json, headers: { 'Content-Type' => 'application/json' })
-end
-
-def stub_turnos_disponibles_fallido(matricula = '123')
-  stub_request(:get, "#{ENV['API_URL']}/turnos/#{matricula}/disponibilidad")
-    .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
-end
-
-def stub_reservar_turno_exitoso
-  stub_request(:post, "#{ENV['API_URL']}/turnos")
-    .with(
-      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', telegram_id: USER_ID.to_s }.to_json,
-      headers: { 'Content-Type' => 'application/json' }
-    )
-    .to_return(status: 200, body: {
-      message: 'El turno se reservó exitosamente',
-      id: 1,
-      fecha: '2023-10-01',
-      hora: '10:00',
-      medico: { nombre: 'Carlos', apellido: 'Sanchez', matricula: '123', especialidad: 'Clinica' }
-    }.to_json, headers: { 'Content-Type' => 'application/json' })
-end
-
-def stub_reservar_turno_fallido
-  stub_request(:post, "#{ENV['API_URL']}/turnos")
-    .with(
-      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', telegram_id: USER_ID.to_s }.to_json,
-      headers: { 'Content-Type' => 'application/json' }
-    )
-    .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
-end
-
-def stub_registrado(exito)
-  if exito
-    stub_request(:get, "#{ENV['API_URL']}/usuarios/telegram/#{USER_ID}")
-      .to_return(status: 200, body: { id: 123, email: 'paciente@example.com', telegram_id: USER_ID }.to_json, headers: { 'Content-Type' => 'application/json' })
-  else
-    stub_request(:get, "#{ENV['API_URL']}/usuarios/telegram/#{USER_ID}")
-      .to_return(status: 404, body: { error: 'Usuario no encontrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
-  end
-end
-
-def stub_error_conexion_verificar_registrado
-  stub_request(:get, "#{ENV['API_URL']}/usuarios/telegram/#{USER_ID}")
-    .to_raise(Faraday::ConnectionFailed.new('Error de conexión'))
 end
 
 describe 'BotClient' do
@@ -287,13 +193,6 @@ describe 'BotClient' do
     stub_registrado(false)
     when_i_send_text('fake_token', '/pedir-turno')
     then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
-    run_bot_once('fake_token')
-  end
-
-  it 'deberia recibir un mensaje /pedir-turno y responder con mensaje de error si falla la conexion' do
-    stub_error_conexion_verificar_registrado
-    when_i_send_text('fake_token', '/pedir-turno')
-    then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
     run_bot_once('fake_token')
   end
 
@@ -385,5 +284,42 @@ describe 'BotClient' do
   it 'should show an error if patient is already registered' do
     email = 'registrado@example.com'
     registro_falla_paciente_registrado(email, USER_ID)
+  end
+
+  it 'muestra un mensaje de error si hay un error de conexión al verificar usuario' do
+    stub_error_conexion(:get, "/usuarios/telegram/#{USER_ID}")
+    when_i_send_text('fake_token', '/pedir-turno')
+    then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
+    run_bot_once('fake_token')
+  end
+
+  it 'muestra un mensaje de error si hay un error de conexión al obtener médicos' do
+    stub_registrado(true)
+    stub_error_conexion(:get, '/turnos/medicos-disponibles')
+    when_i_send_text('fake_token', '/pedir-turno')
+    then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
+    run_bot_once('fake_token')
+  end
+
+  it 'muestra un mensaje de error si hay un error de conexión al obtener turnos' do
+    stub_flujo_turnos_disponibles_con_error_conexion(medicos_disponibles)
+    when_i_send_keyboard_updates('fake_token', 'Seleccione un Médico', '123-Clinica', opciones_medicos)
+    then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
+    run_bot_once('fake_token')
+  end
+
+  it 'muestra un mensaje de error si hay un error de conexión al reservar turno' do
+    stub_flujo_reserva_turno_con_error_conexion(medicos_disponibles, turnos_disponibles)
+    when_i_send_keyboard_updates('fake_token', 'Seleccione un turno', '2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
+    then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
+    run_bot_once('fake_token')
+  end
+
+  it 'muestra un mensaje de error si hay un error de conexión al registrar paciente' do
+    token = 'fake_token'
+    when_i_send_text(token, '/registrar paciente@example.com')
+    stub_error_conexion(:post, '/usuarios')
+    then_i_get_text(token, MENSAJE_ERROR_GENERAL)
+    BotClient.new(token).run_once
   end
 end
