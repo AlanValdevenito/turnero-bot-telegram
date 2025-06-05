@@ -4,6 +4,7 @@ require "#{File.dirname(__FILE__)}/tv/series"
 require "#{File.dirname(__FILE__)}/turnero/turnero"
 require "#{File.dirname(__FILE__)}/turnero/proveedor_turnero"
 require "#{File.dirname(__FILE__)}/turnero/excepciones/email_en_uso_exception"
+require_relative 'constantes/mensajes'
 
 class Routes
   include Routing
@@ -37,21 +38,21 @@ class Routes
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     begin
       turnero.registrar_paciente(email, telegram_id)
-      bot.api.send_message(chat_id: message.chat.id, text: 'Registración exitosa')
+      bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_REGISTRO_EXITOSO)
     rescue EmailYaEnUsoException
-      bot.api.send_message(chat_id: message.chat.id, text: 'El email ingresado ya está en uso')
+      bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_EMAIL_EN_USO)
     rescue PacienteYaRegistradoException
-      bot.api.send_message(chat_id: message.chat.id, text: 'Ya se encuentra registrado')
+      bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_YA_REGISTRADO)
     rescue StandardError => e
       puts "Error completo: #{e.message}"
-      bot.api.send_message(chat_id: message.chat.id, text: 'Error al registrar el paciente')
+      bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_ERROR_GENERAL)
     end
   end
 
   on_message '/pedir-turno' do |bot, message|
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     unless turnero.usuario_registrado?(message.from.id)
-      bot.api.send_message(chat_id: message.chat.id, text: 'No está registrado, use el comando /registrar {email}')
+      bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_NO_REGISTRADO)
       next
     end
     medicos = turnero.solicitar_medicos_disponibles
@@ -65,9 +66,9 @@ class Routes
     markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
     bot.api.send_message(chat_id: message.chat.id, text: 'Seleccione un Médico', reply_markup: markup)
   rescue NoHayMedicosDisponiblesException
-    bot.api.send_message(chat_id: message.chat.id, text: 'No hay médicos disponibles en este momento')
+    bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_NO_MEDICOS)
   rescue ErrorAPIMedicosDisponiblesException
-    bot.api.send_message(chat_id: message.chat.id, text: 'Error al obtener la lista de médicos disponibles')
+    bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_ERROR_MEDICOS)
   end
 
   on_response_to 'Seleccione un Médico' do |bot, message|
@@ -87,9 +88,9 @@ class Routes
       markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
       bot.api.send_message(chat_id: message.message.chat.id, text: 'Seleccione un turno', reply_markup: markup)
     rescue NohayTurnosDisponiblesException
-      bot.api.send_message(chat_id: message.message.chat.id, text: 'No hay turnos disponibles para este médico')
+      bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_NO_TURNOS)
     rescue ErrorAPITurnosDisponiblesException
-      bot.api.send_message(chat_id: message.message.chat.id, text: 'Error al obtener los turnos disponibles')
+      bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_TURNOS)
     end
   end
 
@@ -102,19 +103,14 @@ class Routes
     especialidad = data[5]       # "Traumatologia"
     telegram_id = data[6]        # "7158408552"
     turno = turnero.reservar_turno(matricula, fecha, hora, telegram_id)
-    response = "Turno agendado exitosamente:\nFecha: #{turno['fecha']}\nHora: #{turno['hora']}\nMédico: #{turno['medico']['nombre']} #{turno['medico']['apellido']}\nEspecialidad: #{especialidad}"
+    response = format(MENSAJE_TURNO_CONFIRMADO, fecha: turno['fecha'], hora: turno['hora'], medico: "#{turno['medico']['nombre']} #{turno['medico']['apellido']}", especialidad:)
     bot.api.send_message(chat_id: message.message.chat.id, text: response)
   rescue ErrorAPIReservarTurnoException
-    bot.api.send_message(chat_id: message.message.chat.id, text: 'Error al reservar el turno')
+    bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_RESERVA)
   end
 
   default do |bot, message|
-    help_text = <<~TEXT
-      Comandos disponibles:
-      /registrar {email} - Registra tu email en el sistema
-      /pedir-turno - Solicita un turno médico
-    TEXT
-
+    help_text = MENSAJE_AYUDA
     bot.api.send_message(chat_id: message.chat.id, text: help_text)
   end
 end

@@ -14,6 +14,8 @@ class Turnero
   end
 
   def solicitar_medicos_disponibles
+    # Tal vez sea mejor tener una clase medico para retornar los datos
+    # de los medicos disponibles, pero por ahora retornamos un hash -> objetos
     medicos = @proveedor_turnero.solicitar_medicos_disponibles
     raise NoHayMedicosDisponiblesException if medicos.nil? || medicos.empty?
 
@@ -21,6 +23,8 @@ class Turnero
   end
 
   def solicitar_turnos_disponibles(matricula, especialidad)
+    # Tal vez sea mejor tener una clase turno para retornar los datos
+    # de los turnos disponibles, pero por ahora retornamos un hash -> objetos
     turnos = @proveedor_turnero.solicitar_turnos_disponibles(matricula, especialidad)
     raise NohayTurnosDisponiblesException if turnos.nil? || turnos.empty?
 

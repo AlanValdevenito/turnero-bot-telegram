@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'web_mock'
+require_relative '../app/constantes/mensajes'
 # Uncomment to use VCR
 # require 'vcr_helper'
 
@@ -150,11 +151,7 @@ def registro_falla_paciente_registrado(email, telegram_id)
 end
 
 def expect_mensaje_de_ayuda(token)
-  then_i_get_text(token, <<~TEXT)
-    Comandos disponibles:
-    /registrar {email} - Registra tu email en el sistema
-    /pedir-turno - Solicita un turno médico
-  TEXT
+  then_i_get_text(token, MENSAJE_AYUDA)
 end
 
 def stub_medicos_disponibles_exitoso(medicos)
@@ -284,7 +281,7 @@ describe 'BotClient' do
   it 'deberia recibir un mensaje /pedir-turno y mostrar un mensaje de error si no esta registrado' do
     stub_registrado(false)
     when_i_send_text('fake_token', '/pedir-turno')
-    then_i_get_text('fake_token', 'No está registrado, use el comando /registrar {email}')
+    then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
     run_bot_once('fake_token')
   end
 
@@ -293,7 +290,7 @@ describe 'BotClient' do
     stub_medicos_disponibles_fallido
 
     when_i_send_text('fake_token', '/pedir-turno')
-    then_i_get_text('fake_token', 'Error al obtener la lista de médicos disponibles')
+    then_i_get_text('fake_token', MENSAJE_ERROR_MEDICOS)
 
     run_bot_once('fake_token')
   end
@@ -310,7 +307,7 @@ describe 'BotClient' do
     token = 'fake_token'
     stub_turnos_disponibles_fallido
     when_i_send_keyboard_updates(token, 'Seleccione un Médico', '123-Clinica', opciones_medicos)
-    then_i_get_text(token, 'Error al obtener los turnos disponibles')
+    then_i_get_text(token, MENSAJE_ERROR_TURNOS)
     run_bot_once(token)
   end
 
@@ -318,7 +315,7 @@ describe 'BotClient' do
     token = 'fake_token'
     stub_reservar_turno_exitoso
     when_i_send_keyboard_updates(token, 'Seleccione un turno', '2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
-    then_i_get_text(token, "Turno agendado exitosamente:\nFecha: 2023-10-01\nHora: 10:00\nMédico: Carlos Sanchez\nEspecialidad: Clinica")
+    then_i_get_text(token, format(MENSAJE_TURNO_CONFIRMADO, fecha: '2023-10-01', hora: '10:00', medico: 'Carlos Sanchez', especialidad: 'Clinica'))
     run_bot_once(token)
   end
 
@@ -326,7 +323,7 @@ describe 'BotClient' do
     token = 'fake_token'
     stub_reservar_turno_fallido
     when_i_send_keyboard_updates(token, 'Seleccione un turno', '2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
-    then_i_get_text(token, 'Error al reservar el turno')
+    then_i_get_text(token, MENSAJE_ERROR_RESERVA)
     run_bot_once(token)
   end
 
@@ -334,14 +331,14 @@ describe 'BotClient' do
     stub_registrado(true)
     stub_medicos_disponibles_exitoso([])
     when_i_send_text('fake_token', '/pedir-turno')
-    then_i_get_text('fake_token', 'No hay médicos disponibles en este momento')
+    then_i_get_text('fake_token', MENSAJE_NO_MEDICOS)
     run_bot_once('fake_token')
   end
 
   it 'deberia recibir un mensaje Seleccione un Médico y responder con un mensaje de error si no hay turnos disponibles' do
     stub_turnos_disponibles_exitoso([])
     when_i_send_keyboard_updates('fake_token', 'Seleccione un Médico', '123-Clinica', opciones_medicos)
-    then_i_get_text('fake_token', 'No hay turnos disponibles para este médico')
+    then_i_get_text('fake_token', MENSAJE_NO_TURNOS)
     run_bot_once('fake_token')
   end
 
