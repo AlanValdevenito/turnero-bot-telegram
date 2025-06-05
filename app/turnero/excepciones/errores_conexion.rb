@@ -1,0 +1,2 @@
+class ErrorConexionAPI < StandardError
+end

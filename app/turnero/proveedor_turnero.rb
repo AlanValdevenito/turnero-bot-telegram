@@ -2,6 +2,7 @@ require 'json'
 require_relative 'excepciones/email_en_uso_exception'
 require_relative 'excepciones/paciente_registrado_exception'
 require_relative 'excepciones/errores_api'
+require_relative 'excepciones/errores_conexion'
 
 class ProveedorTurnero
   def initialize(api_url)
@@ -9,10 +10,18 @@ class ProveedorTurnero
   end
 
   def usuario_registrado?(telegram_id)
-    response = Faraday.get("#{ENV['API_URL']}/usuarios/telegram/#{telegram_id}")
-    response.status == 200
+    url = "#{@api_url}/usuarios/telegram/#{telegram_id}"
+    response = Faraday.get(url)
+    case response.status
+    when 200
+      true
+    when 404
+      false
+    else
+      raise ErrorAPIVerificarUsuarioException
+    end
   rescue Faraday::Error
-    false
+    raise ErrorConexionAPI
   end
 
   def crear_usuario(email, telegram_id)
@@ -35,7 +44,7 @@ class ProveedorTurnero
       raise ErrorAPIMedicosDisponiblesException
     end
   rescue Faraday::Error
-    raise ErrorAPIMedicosDisponiblesException
+    raise ErrorConexionAPI
   end
 
   def solicitar_turnos_disponibles(matricula, _especialidad)
@@ -46,7 +55,7 @@ class ProveedorTurnero
       raise ErrorAPITurnosDisponiblesException
     end
   rescue Faraday::Error
-    raise ErrorAPITurnosDisponiblesException
+    raise ErrorConexionAPI
   end
 
   def reservar_turno(matricula, fecha, hora, telegram_id)
@@ -58,7 +67,7 @@ class ProveedorTurnero
       raise ErrorAPIReservarTurnoException
     end
   rescue Faraday::Error
-    raise ErrorAPIReservarTurnoException
+    raise ErrorConexionAPI
   end
 
   private

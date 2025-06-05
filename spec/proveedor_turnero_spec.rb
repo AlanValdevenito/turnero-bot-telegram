@@ -84,7 +84,7 @@ describe 'ProveedorTurnero' do
     stub_request(:get, "#{api_url}/turnos/medicos-disponibles")
       .to_raise(Faraday::Error.new('Error de conexión'))
 
-    expect { turnero.solicitar_medicos_disponibles }.to raise_error(ErrorAPIMedicosDisponiblesException)
+    expect { turnero.solicitar_medicos_disponibles }.to raise_error(ErrorConexionAPI)
   end
 
   it 'obtiene la disponibilidad de turnos para un médico' do
@@ -110,7 +110,7 @@ describe 'ProveedorTurnero' do
     stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
       .to_raise(Faraday::Error.new('Error de conexión'))
 
-    expect { turnero.solicitar_turnos_disponibles(matricula, 'fake_especialidad') }.to raise_error(ErrorAPITurnosDisponiblesException)
+    expect { turnero.solicitar_turnos_disponibles(matricula, 'fake_especialidad') }.to raise_error(ErrorConexionAPI)
   end
 
   it 'reserva un turno exitosamente' do
@@ -134,7 +134,7 @@ describe 'ProveedorTurnero' do
       .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', telegram_id: 1234 })
       .to_raise(Faraday::Error.new('Error de conexión'))
 
-    expect { turnero.reservar_turno('123', '2024-06-05', '10:00', 1234) }.to raise_error(ErrorAPIReservarTurnoException)
+    expect { turnero.reservar_turno('123', '2024-06-05', '10:00', 1234) }.to raise_error(ErrorConexionAPI)
   end
 
   it 'verifica si un usuario está registrado' do
@@ -155,5 +155,15 @@ describe 'ProveedorTurnero' do
       .to_return(status: 404, body: { error: 'Usuario no encontrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
     expect(turnero.usuario_registrado?(telegram_id)).to be false
+  end
+
+  it 'maneja errores al verificar si un usuario está registrado' do
+    telegram_id = datos_usuario[:telegram_id]
+
+    # Stub para error de conexión
+    stub_request(:get, "#{api_url}/usuarios/telegram/#{telegram_id}")
+      .to_raise(Faraday::Error.new('Error de conexión'))
+
+    expect { turnero.usuario_registrado?(telegram_id) }.to raise_error(ErrorConexionAPI)
   end
 end

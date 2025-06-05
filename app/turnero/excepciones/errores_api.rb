@@ -6,3 +6,6 @@ end
 
 class ErrorAPIReservarTurnoException < StandardError
 end
+
+class ErrorAPIVerificarUsuarioException < StandardError
+end
