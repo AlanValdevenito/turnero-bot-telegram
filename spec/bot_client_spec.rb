@@ -208,6 +208,11 @@ def stub_registrado(exito)
   end
 end
 
+def stub_error_conexion_verificar_registrado
+  stub_request(:get, "#{ENV['API_URL']}/usuarios/telegram/#{USER_ID}")
+    .to_raise(Faraday::ConnectionFailed.new('Error de conexión'))
+end
+
 describe 'BotClient' do
   let(:opciones_medicos) do
     [
@@ -282,6 +287,13 @@ describe 'BotClient' do
     stub_registrado(false)
     when_i_send_text('fake_token', '/pedir-turno')
     then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
+    run_bot_once('fake_token')
+  end
+
+  it 'deberia recibir un mensaje /pedir-turno y responder con mensaje de error si falla la conexion' do
+    stub_error_conexion_verificar_registrado
+    when_i_send_text('fake_token', '/pedir-turno')
+    then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
     run_bot_once('fake_token')
   end
 
