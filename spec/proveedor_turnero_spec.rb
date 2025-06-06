@@ -43,32 +43,6 @@ describe 'ProveedorTurnero' do
       .to_return(status: 200, body: { message: 'Turno reservado exitosamente' }.to_json, headers: { 'Content-Type' => 'application/json' })
   end
 
-  it 'obtiene la disponibilidad de turnos para un médico' do
-    matricula = '123'
-
-    stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
-      .to_return(status: 200, body: turnos_disponibles.to_json, headers: { 'Content-Type' => 'application/json' })
-
-    response = turnero.solicitar_turnos_disponibles(matricula, 'fake_especialidad')
-    expect(response).to eq(turnos_disponibles)
-  end
-
-  it 'maneja errores al solicitar turnos disponibles' do
-    matricula = '999'
-    stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
-      .to_return(status: 404, body: { error: 'Médico no encontrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
-
-    expect { turnero.solicitar_turnos_disponibles(matricula, 'fake_especialidad') }.to raise_error(ErrorAPITurnosDisponiblesException)
-  end
-
-  it 'maneja errores de conexión al solicitar turnos disponibles' do
-    matricula = '999'
-    stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
-      .to_raise(Faraday::Error.new('Error de conexión'))
-
-    expect { turnero.solicitar_turnos_disponibles(matricula, 'fake_especialidad') }.to raise_error(ErrorConexionAPI)
-  end
-
   it 'verifica si un usuario está registrado' do
     telegram_id = datos_usuario[:telegram_id]
 
@@ -142,7 +116,7 @@ describe 'ProveedorTurnero' do
     end
   end
 
-  context 'when solicitar_turnos_disponibles' do
+  context 'when solicitar_medicos_disponibles' do
     it 'obtiene la lista de médicos disponibles con todos los campos' do
       stub_request(:get, "#{api_url}/turnos/medicos-disponibles")
         .to_return(status: 200, body: medicos_disponibles.to_json, headers: { 'Content-Type' => 'application/json' })
@@ -171,6 +145,41 @@ describe 'ProveedorTurnero' do
         .to_return(status: 300, body: { error: '300' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
       expect { turnero.solicitar_medicos_disponibles }.to raise_error(StandardError, /Unexpected status code/)
+    end
+  end
+
+  context 'when solicitar_turnos_disponibles' do
+    it 'obtiene la disponibilidad de turnos para un médico' do
+      matricula = '123'
+
+      stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
+        .to_return(status: 200, body: turnos_disponibles.to_json, headers: { 'Content-Type' => 'application/json' })
+
+      response = turnero.solicitar_turnos_disponibles(matricula, 'fake_especialidad')
+      expect(response).to eq(turnos_disponibles)
+    end
+
+    it 'maneja error al no haber turnos disponibles -> error' do
+      matricula = '123'
+      stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
+        .to_return(status: 400, body: { error: 'No hay turnos disponibles para este médico' }.to_json, headers: { 'Content-Type' => 'application/json' })
+      expect { turnero.solicitar_turnos_disponibles(matricula, 'fake_especialidad') }.to raise_error(NohayTurnosDisponiblesException)
+    end
+
+    it 'maneja errores al solicitar turnos disponibles de un medico inexistente -> error' do
+      matricula = '999'
+      stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
+        .to_return(status: 404, body: { error: 'Médico no encontrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+      expect { turnero.solicitar_turnos_disponibles(matricula, 'fake_especialidad') }.to raise_error(MedicoNoEncontradoException)
+    end
+
+    it 'maneja errores de conexión al solicitar turnos disponibles' do
+      matricula = '999'
+      stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
+        .to_raise(Faraday::Error.new('Error de conexión'))
+
+      expect { turnero.solicitar_turnos_disponibles(matricula, 'fake_especialidad') }.to raise_error(ErrorConexionAPI)
     end
   end
 

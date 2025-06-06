@@ -45,6 +45,11 @@ def stub_turnos_disponibles_exitoso(turnos, matricula = '123')
     .to_return(status: 200, body: turnos.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
+def stub_turnos_disponibles_fallido_vacio(matricula = '123')
+  stub_request(:get, "#{ENV['API_URL']}/turnos/#{matricula}/disponibilidad")
+    .to_return(status: 400, body: { error: 'No hay turnos disponibles' }.to_json, headers: { 'Content-Type' => 'application/json' })
+end
+
 def stub_turnos_disponibles_fallido(matricula = '123')
   stub_request(:get, "#{ENV['API_URL']}/turnos/#{matricula}/disponibilidad")
     .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })

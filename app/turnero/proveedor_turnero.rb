@@ -60,10 +60,15 @@ class ProveedorTurnero
 
   def solicitar_turnos_disponibles(matricula, _especialidad)
     response = Faraday.get("#{@api_url}/turnos/#{matricula}/disponibilidad")
-    if response.success?
+    case response.status
+    when 200..299
       JSON.parse(response.body)
-    else
+    when 400..499
+      manejar_error_turnos_disponibles(response)
+    when 500..599
       raise ErrorAPITurnosDisponiblesException
+    else
+      raise StandardError, "Unexpected status code: #{response.status}"
     end
   rescue Faraday::Error
     raise ErrorConexionAPI
@@ -100,6 +105,18 @@ class ProveedorTurnero
       raise PacienteYaRegistradoException
     else
       raise StandardError, error
+    end
+  end
+
+  def manejar_error_turnos_disponibles(response)
+    error = JSON.parse(response.body)['error']
+    case error
+    when /no hay turnos/i
+      raise NohayTurnosDisponiblesException
+    when /médico no encontrado/i
+      raise MedicoNoEncontradoException
+    else
+      raise ErrorAPITurnosDisponiblesException, error
     end
   end
 

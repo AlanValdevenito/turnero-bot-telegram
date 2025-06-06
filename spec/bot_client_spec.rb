@@ -246,8 +246,8 @@ describe 'BotClient' do
     run_bot_once('fake_token')
   end
 
-  it 'deberia recibir un mensaje Seleccione un Médico y responder con un mensaje de error si no hay turnos disponibles' do
-    stub_turnos_disponibles_exitoso([])
+  it 'deberia recibir un mensaje Seleccione un Médico y responder con un mensaje con que no hay turnos disponibles' do
+    stub_turnos_disponibles_fallido_vacio
     when_i_send_keyboard_updates('fake_token', 'Seleccione un Médico', '123-Clinica', opciones_medicos)
     then_i_get_text('fake_token', MENSAJE_NO_TURNOS)
     run_bot_once('fake_token')

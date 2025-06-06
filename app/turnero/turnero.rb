@@ -25,10 +25,7 @@ class Turnero
   def solicitar_turnos_disponibles(matricula, especialidad)
     # Tal vez sea mejor tener una clase turno para retornar los datos
     # de los turnos disponibles, pero por ahora retornamos un hash -> objetos
-    turnos = @proveedor_turnero.solicitar_turnos_disponibles(matricula, especialidad)
-    raise NohayTurnosDisponiblesException if turnos.nil? || turnos.empty?
-
-    turnos
+    @proveedor_turnero.solicitar_turnos_disponibles(matricula, especialidad)
   end
 
   def reservar_turno(matricula, fecha, hora, telegram_id)
