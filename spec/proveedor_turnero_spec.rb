@@ -1,6 +1,6 @@
 require 'spec_helper'
 require 'web_mock'
-require_relative '../app/turnero/proveedor_turnero'
+require_relative '../app/turnero/proveedor_turnero/proveedor_turnero'
 
 describe 'ProveedorTurnero' do
   let(:datos_usuario) { { email: 'test@test.com', telegram_id: 1234 } }

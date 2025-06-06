@@ -2,8 +2,7 @@ require "#{File.dirname(__FILE__)}/../lib/routing"
 require "#{File.dirname(__FILE__)}/../lib/version"
 require "#{File.dirname(__FILE__)}/tv/series"
 require "#{File.dirname(__FILE__)}/turnero/turnero"
-require "#{File.dirname(__FILE__)}/turnero/proveedor_turnero"
-require "#{File.dirname(__FILE__)}/turnero/excepciones/email_en_uso_exception"
+require "#{File.dirname(__FILE__)}/turnero/proveedor_turnero/proveedor_turnero"
 require_relative 'constantes/mensajes'
 
 class Routes
