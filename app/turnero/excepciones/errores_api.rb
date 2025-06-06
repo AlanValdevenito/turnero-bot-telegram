@@ -9,3 +9,6 @@ end
 
 class ErrorAPIVerificarUsuarioException < StandardError
 end
+
+class ErrorAPICrearUsuarioException < StandardError
+end

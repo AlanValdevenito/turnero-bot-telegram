@@ -28,14 +28,20 @@ class ProveedorTurnero
 
   def crear_usuario(email, telegram_id)
     payload = { email:, telegram_id: }.to_json
-
     response = Faraday.post("#{@api_url}/usuarios", payload, { 'Content-Type' => 'application/json' })
 
-    if response.success?
+    case response.status
+    when 200..299
       JSON.parse(response.body)
+    when 400..499
+      manejar_error_crear_usuario(response)
+    when 500..599
+      raise ErrorAPICrearUsuarioException
     else
-      manejar_error(response)
+      raise StandardError, "Unexpected status code: #{response.status}"
     end
+  rescue Faraday::Error
+    raise ErrorConexionAPI
   end
 
   def solicitar_medicos_disponibles
@@ -81,7 +87,7 @@ class ProveedorTurnero
 
   private
 
-  def manejar_error(response)
+  def manejar_error_crear_usuario(response)
     error = JSON.parse(response.body)['error']
 
     case error

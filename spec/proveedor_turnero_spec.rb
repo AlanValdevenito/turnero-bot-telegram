@@ -43,27 +43,6 @@ describe 'ProveedorTurnero' do
       .to_return(status: 200, body: { message: 'Turno reservado exitosamente' }.to_json, headers: { 'Content-Type' => 'application/json' })
   end
 
-  it 'registra un usuario exitosamente' do
-    response_body = { message: 'El paciente se registró existosamente' }.to_json
-
-    cuando_quiero_registrar_usuario(datos_usuario[:email], datos_usuario[:telegram_id])
-    response = turnero.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id])
-
-    expect(response).to eq(JSON.parse(response_body))
-  end
-
-  it 'da error cuando el email ya está en uso' do
-    cuando_quiero_registrar_usuario_email_en_uso(datos_usuario[:email], datos_usuario[:telegram_id])
-
-    expect { turnero.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id]) }.to raise_error(EmailYaEnUsoException)
-  end
-
-  it 'da error cuando el paciente ya está registrado' do
-    cuando_quiero_registrar_paciente_ya_registrado(datos_usuario[:email], datos_usuario[:telegram_id])
-
-    expect { turnero.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id]) }.to raise_error(PacienteYaRegistradoException)
-  end
-
   it 'obtiene la lista de médicos disponibles con todos los campos' do
     stub_request(:get, "#{api_url}/turnos/medicos-disponibles")
       .to_return(status: 200, body: medicos_disponibles.to_json, headers: { 'Content-Type' => 'application/json' })
@@ -151,6 +130,39 @@ describe 'ProveedorTurnero' do
       .to_return(status: 500, body: { error: 'Error interno del servidor' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
     expect { turnero.usuario_registrado?(telegram_id) }.to raise_error(ErrorAPIVerificarUsuarioException)
+  end
+
+  context 'when crear_usuario' do
+    it 'crea un usuario exitosamente' do
+      cuando_quiero_registrar_usuario(datos_usuario[:email], datos_usuario[:telegram_id])
+      response_body = { message: 'El paciente se registró existosamente' }.to_json
+      response = turnero.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id])
+      expect(response).to eq(JSON.parse(response_body))
+    end
+
+    it 'intenta crear un usuario con un email ya en uso -> falla' do
+      cuando_quiero_registrar_usuario_email_en_uso(datos_usuario[:email], datos_usuario[:telegram_id])
+      expect { turnero.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id]) }.to raise_error(EmailYaEnUsoException)
+    end
+
+    it 'intenta crear un usuario que ya está registrado -> falla' do
+      cuando_quiero_registrar_paciente_ya_registrado(datos_usuario[:email], datos_usuario[:telegram_id])
+      expect { turnero.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id]) }.to raise_error(PacienteYaRegistradoException)
+    end
+
+    it 'maneja errores de conexión al crear un usuario' do
+      stub_request(:post, "#{api_url}/usuarios")
+        .with(body: { email: datos_usuario[:email], telegram_id: datos_usuario[:telegram_id] })
+        .to_raise(Faraday::Error.new('Error de conexión'))
+      expect { turnero.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id]) }.to raise_error(ErrorConexionAPI)
+    end
+
+    it 'maneja errores de API al crear un usuario' do
+      stub_request(:post, "#{api_url}/usuarios")
+        .with(body: { email: datos_usuario[:email], telegram_id: datos_usuario[:telegram_id] })
+        .to_return(status: 500, body: { error: 'Error interno del servidor' }.to_json, headers: { 'Content-Type' => 'application/json' })
+      expect { turnero.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id]) }.to raise_error(ErrorAPICrearUsuarioException)
+    end
   end
 
   context 'when reservar_turno' do
