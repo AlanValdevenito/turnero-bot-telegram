@@ -101,3 +101,8 @@ def stub_flujo_turnos_disponibles_con_error_conexion(medicos_disponibles, matric
   stub_medicos_disponibles_exitoso(medicos_disponibles)
   stub_error_conexion(:get, "/turnos/#{matricula}/disponibilidad")
 end
+
+def stub_error_interno_api(tipo, ruta)
+  stub_request(tipo, "#{ENV['API_URL']}#{ruta}")
+    .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
+end

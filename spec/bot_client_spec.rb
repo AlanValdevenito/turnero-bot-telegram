@@ -322,4 +322,12 @@ describe 'BotClient' do
     then_i_get_text(token, MENSAJE_ERROR_GENERAL)
     BotClient.new(token).run_once
   end
+
+  it 'muestra un mensaje de error si hay un error de conexión al verificar si el usuario está registrado' do
+    token = 'fake_token'
+    stub_error_interno_api(:get, "/usuarios/telegram/#{USER_ID}")
+    when_i_send_text(token, '/pedir-turno')
+    then_i_get_text(token, MENSAJE_ERROR_GENERAL)
+    BotClient.new(token).run_once
+  end
 end

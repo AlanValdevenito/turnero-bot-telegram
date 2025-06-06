@@ -66,7 +66,7 @@ class Routes
     bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_NO_MEDICOS)
   rescue ErrorAPIMedicosDisponiblesException
     bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_ERROR_MEDICOS)
-  rescue ErrorConexionAPI
+  rescue ErrorAPIVerificarUsuarioException, ErrorConexionAPI
     bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_ERROR_GENERAL)
   end
 

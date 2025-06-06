@@ -166,4 +166,14 @@ describe 'ProveedorTurnero' do
 
     expect { turnero.usuario_registrado?(telegram_id) }.to raise_error(ErrorConexionAPI)
   end
+
+  it 'maneja errores al verificar si un usuario está registrado con error de API' do
+    telegram_id = datos_usuario[:telegram_id]
+
+    # Stub para error de API
+    stub_request(:get, "#{api_url}/usuarios/telegram/#{telegram_id}")
+      .to_return(status: 500, body: { error: 'Error interno del servidor' }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+    expect { turnero.usuario_registrado?(telegram_id) }.to raise_error(ErrorAPIVerificarUsuarioException)
+  end
 end
