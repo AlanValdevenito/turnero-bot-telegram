@@ -46,10 +46,13 @@ class ProveedorTurnero
 
   def solicitar_medicos_disponibles
     response = Faraday.get("#{@api_url}/turnos/medicos-disponibles")
-    if response.success?
+    case response.status
+    when 200..299
       JSON.parse(response.body)
-    else
+    when 500..599
       raise ErrorAPIMedicosDisponiblesException
+    else
+      raise StandardError, "Unexpected status code: #{response.status}"
     end
   rescue Faraday::Error
     raise ErrorConexionAPI
