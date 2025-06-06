@@ -1,8 +1,10 @@
 require 'json'
 require_relative 'excepciones/email_en_uso_exception'
-require_relative 'excepciones/paciente_registrado_exception'
 require_relative 'excepciones/errores_api'
+require_relative 'excepciones/errores_reserva_turno'
+require_relative 'excepciones/paciente_registrado_exception'
 require_relative 'excepciones/errores_conexion'
+require_relative 'excepciones/no_hay_disponibilidad'
 
 class ProveedorTurnero
   def initialize(api_url)
@@ -61,10 +63,17 @@ class ProveedorTurnero
   def reservar_turno(matricula, fecha, hora, telegram_id)
     payload = { matricula:, fecha:, hora:, telegram_id: }.to_json
     response = Faraday.post("#{@api_url}/turnos", payload, { 'Content-Type' => 'application/json' })
-    if response.success?
+
+    case response.status
+    when 200..299
       JSON.parse(response.body)
-    else
+    when 400..499
+      manejar_error_reserva_turno(response)
+    when 500..599
       raise ErrorAPIReservarTurnoException
+    else
+      # Unhandled status code
+      raise StandardError, "Unexpected status code: #{response.status}"
     end
   rescue Faraday::Error
     raise ErrorConexionAPI
@@ -81,7 +90,19 @@ class ProveedorTurnero
     when /paciente.*registrado/i
       raise PacienteYaRegistradoException
     else
-      raise StandardError
+      raise StandardError, error
+    end
+  end
+
+  def manejar_error_reserva_turno(response)
+    error = JSON.parse(response.body)['error']
+    case error
+    when /médico no encontrado/i
+      raise MedicoNoEncontradoException
+    when /ya existe un turno/i
+      raise TurnoYaExisteException
+    else
+      raise StandardError, error
     end
   end
 end
