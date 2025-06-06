@@ -54,10 +54,7 @@ class Routes
     medicos = turnero.solicitar_medicos_disponibles
     kb = medicos.map do |m|
       callback_data = "#{m['matricula']}-#{m['especialidad']}"
-      [Telegram::Bot::Types::InlineKeyboardButton.new(
-        text: "#{m['nombre']} #{m['apellido']}",
-        callback_data:
-      )]
+      [Telegram::Bot::Types::InlineKeyboardButton.new(text: "#{m['nombre']} #{m['apellido']}", callback_data:)]
     end
     markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
     bot.api.send_message(chat_id: message.chat.id, text: 'Seleccione un Médico', reply_markup: markup)
@@ -105,7 +102,9 @@ class Routes
     turno = turnero.reservar_turno(matricula, fecha, hora, telegram_id)
     response = format(MENSAJE_TURNO_CONFIRMADO, fecha: turno['fecha'], hora: turno['hora'], medico: "#{turno['medico']['nombre']} #{turno['medico']['apellido']}", especialidad:)
     bot.api.send_message(chat_id: message.message.chat.id, text: response)
-  rescue ErrorAPIReservarTurnoException, TurnoYaExisteException
+  rescue TurnoYaExisteException
+    bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_TURNO_EXISTENTE)
+  rescue ErrorAPIReservarTurnoException
     bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_RESERVA)
   rescue ErrorConexionAPI
     bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_GENERAL)
