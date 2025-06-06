@@ -79,6 +79,21 @@ def stub_reservar_turno_fallido
     .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
+def stub_reservar_turno_ya_reservado
+  stub_request(:post, "#{ENV['API_URL']}/turnos")
+    .with(
+      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', telegram_id: USER_ID.to_s }.to_json,
+      headers: { 'Content-Type' => 'application/json' }
+    )
+    .to_return(status: 400, body: { error: 'Ya existe un turno para ese médico y fecha/hora' }.to_json, headers: { 'Content-Type' => 'application/json' })
+end
+
+def stub_flujo_turno_ya_reservado(turnos_disponibles, matricula = '123')
+  stub_registrado(true)
+  stub_turnos_disponibles_exitoso(turnos_disponibles, matricula)
+  stub_reservar_turno_ya_reservado
+end
+
 def stub_registrado(exito)
   if exito
     stub_request(:get, "#{ENV['API_URL']}/usuarios/telegram/#{USER_ID}")

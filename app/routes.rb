@@ -105,7 +105,7 @@ class Routes
     turno = turnero.reservar_turno(matricula, fecha, hora, telegram_id)
     response = format(MENSAJE_TURNO_CONFIRMADO, fecha: turno['fecha'], hora: turno['hora'], medico: "#{turno['medico']['nombre']} #{turno['medico']['apellido']}", especialidad:)
     bot.api.send_message(chat_id: message.message.chat.id, text: response)
-  rescue ErrorAPIReservarTurnoException
+  rescue ErrorAPIReservarTurnoException, TurnoYaExisteException
     bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_RESERVA)
   rescue ErrorConexionAPI
     bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_GENERAL)

@@ -238,6 +238,13 @@ describe 'BotClient' do
     run_bot_once(token)
   end
 
+  it 'muestra un mensaje de error si se quiere reservar un turno ya reservado' do
+    stub_flujo_turno_ya_reservado(turnos_disponibles)
+    when_i_send_keyboard_updates('fake_token', 'Seleccione un turno', '2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
+    then_i_get_text('fake_token', MENSAJE_ERROR_RESERVA)
+    run_bot_once('fake_token')
+  end
+
   it 'deberia recibir un mensaje /pedir-turno y responder con que no hay médicos disponibles' do
     stub_registrado(true)
     stub_medicos_disponibles_exitoso([])
