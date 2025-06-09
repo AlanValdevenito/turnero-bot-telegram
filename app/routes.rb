@@ -72,10 +72,10 @@ class Routes
     begin
       turnos = turnero.solicitar_turnos_disponibles(matricula, especialidad)
       kb = turnos.map do |t|
-        callback_data = "#{t['fecha']}-#{t['hora']}-#{matricula}-#{especialidad}-#{message.from.id}"
+        callback_data = "#{t.fecha}-#{t.hora}-#{matricula}-#{especialidad}-#{message.from.id}"
         [
           Telegram::Bot::Types::InlineKeyboardButton.new(
-            text: "#{t['fecha']} - #{t['hora']}",
+            text: "#{t.fecha} - #{t.hora}",
             callback_data:
           )
         ]
