@@ -8,17 +8,20 @@ describe 'Turnero' do
   let(:telegram_id) { 1234 }
 
   it 'registracion exitosa' do
-    expect(proveedor_mock).to receive(:crear_usuario).with(email, telegram_id)
-    turnero.registrar_paciente(email, telegram_id)
+    resultado = ResultadoCrearUsuario.new(exito: true)
+    allow(proveedor_mock).to receive(:crear_usuario).with(email, telegram_id).and_return(resultado)
+    expect { turnero.registrar_paciente(email, telegram_id) }.not_to raise_error
   end
 
   it 'da error si el email ya esta en uso' do
-    allow(proveedor_mock).to receive(:crear_usuario).and_raise(EmailYaEnUsoException)
+    resultado = ResultadoCrearUsuario.new(exito: false, error: 'El email ingresado ya está en uso')
+    allow(proveedor_mock).to receive(:crear_usuario).and_return(resultado)
     expect { turnero.registrar_paciente(email, telegram_id) }.to raise_error(EmailYaEnUsoException)
   end
 
   it 'da error si el paciente ya esta registrado' do
-    allow(proveedor_mock).to receive(:crear_usuario).and_raise(PacienteYaRegistradoException)
+    resultado = ResultadoCrearUsuario.new(exito: false, error: 'El paciente ya está registrado')
+    allow(proveedor_mock).to receive(:crear_usuario).and_return(resultado)
     expect { turnero.registrar_paciente(email, telegram_id) }.to raise_error(PacienteYaRegistradoException)
   end
 

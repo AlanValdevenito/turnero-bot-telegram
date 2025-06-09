@@ -1,4 +1,8 @@
 require_relative 'excepciones/no_hay_disponibilidad'
+require_relative 'excepciones/email_en_uso_exception'
+require_relative 'excepciones/errores_reserva_turno'
+require_relative 'excepciones/paciente_registrado_exception'
+require_relative 'excepciones/errores_api'
 
 class Turnero
   def initialize(proveedor_turnero)
@@ -10,7 +14,18 @@ class Turnero
   end
 
   def registrar_paciente(email, telegram_id)
-    @proveedor_turnero.crear_usuario(email, telegram_id)
+    resultado = @proveedor_turnero.crear_usuario(email, telegram_id)
+
+    unless resultado.exito?
+      case resultado.error
+      when /ya está en uso/i
+        raise EmailYaEnUsoException
+      when /paciente.*registrado/i
+        raise PacienteYaRegistradoException
+      else
+        raise ErrorAPICrearUsuarioException, resultado.error
+      end
+    end
   end
 
   def solicitar_medicos_disponibles

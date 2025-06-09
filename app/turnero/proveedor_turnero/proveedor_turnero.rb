@@ -1,11 +1,10 @@
 require 'json'
-require_relative '../excepciones/email_en_uso_exception'
 require_relative '../excepciones/errores_api'
 require_relative '../excepciones/errores_conexion'
-require_relative '../excepciones/paciente_registrado_exception'
 require_relative './resultados.rb/resultado_reserva'
 require_relative './resultados.rb/resultado_turnos_disponibles'
 require_relative './resultados.rb/resultado_medicos_disponibles'
+require_relative './resultados.rb/resultado_crear_usuario'
 require_relative 'proveedor_turnero_helpers'
 
 class ProveedorTurnero
@@ -34,9 +33,10 @@ class ProveedorTurnero
 
     case response.status
     when 200..299
-      JSON.parse(response.body)
+      ResultadoCrearUsuario.new(exito: true)
     when 400..499
-      manejar_error_crear_usuario(response)
+      error = JSON.parse(response.body)['error']
+      ResultadoCrearUsuario.new(exito: false, error:)
     when 500..599
       raise ErrorAPICrearUsuarioException
     else

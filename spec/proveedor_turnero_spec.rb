@@ -153,19 +153,25 @@ describe 'ProveedorTurnero' do
   context 'when crear_usuario' do
     it 'crea un usuario exitosamente' do
       cuando_quiero_registrar_usuario(datos_usuario[:email], datos_usuario[:telegram_id])
-      response_body = { message: 'El paciente se registró existosamente' }.to_json
-      response = proveedor.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id])
-      expect(response).to eq(JSON.parse(response_body))
+      resultado = proveedor.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id])
+      expect(resultado).to be_a(ResultadoCrearUsuario)
+      expect(resultado.exito?).to be true
     end
 
-    it 'intenta crear un usuario con un email ya en uso -> falla' do
+    it 'intenta crear un usuario con un email ya en uso -> resultado con error' do
       cuando_quiero_registrar_usuario_email_en_uso(datos_usuario[:email], datos_usuario[:telegram_id])
-      expect { proveedor.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id]) }.to raise_error(EmailYaEnUsoException)
+      resultado = proveedor.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id])
+      expect(resultado).to be_a(ResultadoCrearUsuario)
+      expect(resultado.exito?).to be false
+      expect(resultado.error).to eq('El email ingresado ya está en uso')
     end
 
-    it 'intenta crear un usuario que ya está registrado -> falla' do
+    it 'intenta crear un usuario que ya está registrado -> resultado con error' do
       cuando_quiero_registrar_paciente_ya_registrado(datos_usuario[:email], datos_usuario[:telegram_id])
-      expect { proveedor.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id]) }.to raise_error(PacienteYaRegistradoException)
+      resultado = proveedor.crear_usuario(datos_usuario[:email], datos_usuario[:telegram_id])
+      expect(resultado).to be_a(ResultadoCrearUsuario)
+      expect(resultado.exito?).to be false
+      expect(resultado.error).to eq('El paciente ya está registrado')
     end
 
     it 'maneja errores de conexión al crear un usuario' do
