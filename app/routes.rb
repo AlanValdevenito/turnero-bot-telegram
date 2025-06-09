@@ -53,7 +53,7 @@ class Routes
     end
     medicos = turnero.solicitar_medicos_disponibles
     kb = medicos.map do |m|
-      callback_data = "#{m.matricula}-#{m.especialidad}"
+      callback_data = "#{m.matricula}|#{m.especialidad}"
       [Telegram::Bot::Types::InlineKeyboardButton.new(text: "#{m.nombre} #{m.apellido}", callback_data:)]
     end
     markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
@@ -68,11 +68,11 @@ class Routes
 
   on_response_to MENSAJE_SELECCIONE_MEDICO do |bot, message|
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
-    matricula, especialidad = message.data.split('-')
+    matricula, especialidad = message.data.split('|')
     begin
       turnos = turnero.solicitar_turnos_disponibles(matricula, especialidad)
       kb = turnos.map do |t|
-        callback_data = "#{t.fecha}-#{t.hora}-#{matricula}-#{especialidad}-#{message.from.id}"
+        callback_data = "#{t.fecha}|#{t.hora}|#{matricula}|#{especialidad}|#{message.from.id}"
         [
           Telegram::Bot::Types::InlineKeyboardButton.new(
             text: "#{t.fecha} - #{t.hora}",
@@ -93,12 +93,12 @@ class Routes
 
   on_response_to MENSAJE_SELECCIONE_TURNO do |bot, message|
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
-    data = message.data.split('-')
-    fecha = data[0..2].join('-') # "2025-06-05"
-    hora = data[3]               # "08:10"
-    matricula = data[4]          # "92"
-    especialidad = data[5]       # "Traumatologia"
-    telegram_id = data[6]        # "7158408552"
+    data = message.data.split('|')
+    fecha = data[0]         # "2025-06-05"
+    hora = data[1]          # "08:10"
+    matricula = data[2]     # "92"
+    especialidad = data[3]  # "Traumatologia"
+    telegram_id = data[4]   # "7158408552"
     turno = turnero.reservar_turno(matricula, fecha, hora, telegram_id)
     response = format(MENSAJE_TURNO_CONFIRMADO, fecha: turno.fecha, hora: turno.hora, medico: "#{turno.medico.nombre} #{turno.medico.apellido}", especialidad:)
     bot.api.send_message(chat_id: message.message.chat.id, text: response)

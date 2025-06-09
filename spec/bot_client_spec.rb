@@ -122,9 +122,9 @@ end
 describe 'BotClient' do
   let(:opciones_medicos) do
     [
-      { text: 'Carlos Sanchez', callback_data: '123-Clinica' },
-      { text: 'Maria Perez', callback_data: '456-Pediatria' },
-      { text: 'Juan Ramirez', callback_data: '789-Traumatologia' }
+      { text: 'Carlos Sanchez', callback_data: '123|Clinica' },
+      { text: 'Maria Perez', callback_data: '456|Pediatria' },
+      { text: 'Juan Ramirez', callback_data: '789|Traumatologia' }
     ]
   end
 
@@ -138,9 +138,9 @@ describe 'BotClient' do
 
   let(:opciones_turnos) do
     [
-      { text: '2023-10-01 - 10:00', callback_data: '2023-10-01-10:00-123-Clinica-141733544' },
-      { text: '2023-10-01 - 11:00', callback_data: '2023-10-01-11:00-123-Clinica-141733544' },
-      { text: '2023-10-01 - 12:00', callback_data: '2023-10-01-12:00-123-Clinica-141733544' }
+      { text: '2023-10-01 - 10:00', callback_data: '2023-10-01|10:00|123|Clinica|141733544' },
+      { text: '2023-10-01 - 11:00', callback_data: '2023-10-01|11:00|123|Clinica|141733544' },
+      { text: '2023-10-01 - 12:00', callback_data: '2023-10-01|12:00|123|Clinica|141733544' }
     ]
   end
 
@@ -209,7 +209,7 @@ describe 'BotClient' do
   it 'deberia recibir un mensaje Seleccione un Médico y responder con un inline keyboard' do
     token = 'fake_token'
     stub_turnos_disponibles_exitoso(turnos_disponibles, '123')
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_MEDICO, '123-Clinica', opciones_medicos)
+    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica', opciones_medicos)
     then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TURNO, opciones_turnos)
     run_bot_once(token)
   end
@@ -217,7 +217,7 @@ describe 'BotClient' do
   it 'muestra un mensaje de error si la API de turnos falla' do
     token = 'fake_token'
     stub_turnos_disponibles_fallido
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_MEDICO, '123-Clinica', opciones_medicos)
+    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica', opciones_medicos)
     then_i_get_text(token, MENSAJE_ERROR_TURNOS)
     run_bot_once(token)
   end
@@ -225,7 +225,7 @@ describe 'BotClient' do
   it 'deberia recibir un mensaje Seleccione un turno y responder con un mensaje de confirmación' do
     token = 'fake_token'
     stub_reservar_turno_exitoso
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
+    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|141733544', opciones_turnos)
     then_i_get_text(token, format(MENSAJE_TURNO_CONFIRMADO, fecha: '2023-10-01', hora: '10:00', medico: 'Carlos Sanchez', especialidad: 'Clinica'))
     run_bot_once(token)
   end
@@ -233,14 +233,14 @@ describe 'BotClient' do
   it 'muestra un mensaje de error si la API de reservar turno falla' do
     token = 'fake_token'
     stub_reservar_turno_fallido
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
+    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|141733544', opciones_turnos)
     then_i_get_text(token, MENSAJE_ERROR_RESERVA)
     run_bot_once(token)
   end
 
   it 'muestra un mensaje de error si se quiere reservar un turno ya reservado' do
     stub_flujo_turno_ya_reservado(turnos_disponibles)
-    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TURNO, '2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
+    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|141733544', opciones_turnos)
     then_i_get_text('fake_token', MENSAJE_ERROR_TURNO_EXISTENTE)
     run_bot_once('fake_token')
   end
@@ -255,7 +255,7 @@ describe 'BotClient' do
 
   it 'deberia recibir un mensaje Seleccione un Médico y responder con un mensaje con que no hay turnos disponibles' do
     stub_turnos_disponibles_fallido_vacio
-    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_MEDICO, '123-Clinica', opciones_medicos)
+    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_MEDICO, '123|Clinica', opciones_medicos)
     then_i_get_text('fake_token', MENSAJE_NO_TURNOS)
     run_bot_once('fake_token')
   end
@@ -310,14 +310,14 @@ describe 'BotClient' do
 
   it 'muestra un mensaje de error si hay un error de conexión al obtener turnos' do
     stub_flujo_turnos_disponibles_con_error_conexion(medicos_disponibles)
-    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_MEDICO, '123-Clinica', opciones_medicos)
+    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_MEDICO, '123|Clinica', opciones_medicos)
     then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
     run_bot_once('fake_token')
   end
 
   it 'muestra un mensaje de error si hay un error de conexión al reservar turno' do
     stub_flujo_reserva_turno_con_error_conexion(medicos_disponibles, turnos_disponibles)
-    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TURNO, '2023-10-01-10:00-123-Clinica-141733544', opciones_turnos)
+    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|141733544', opciones_turnos)
     then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
     run_bot_once('fake_token')
   end
