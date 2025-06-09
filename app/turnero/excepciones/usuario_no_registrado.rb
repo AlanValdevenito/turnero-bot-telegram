@@ -1,0 +1,2 @@
+class UsuarioNoRegistradoException < StandardError
+end

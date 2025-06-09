@@ -47,10 +47,7 @@ class Routes
 
   on_message '/pedir-turno' do |bot, message|
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
-    unless turnero.usuario_registrado?(message.from.id)
-      bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_NO_REGISTRADO)
-      next
-    end
+    turnero.usuario_registrado?(message.from.id)
     medicos = turnero.solicitar_medicos_disponibles
     kb = medicos.map do |m|
       callback_data = "#{m.matricula}|#{m.especialidad}"
@@ -58,6 +55,8 @@ class Routes
     end
     markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
     bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_SELECCIONE_MEDICO, reply_markup: markup)
+  rescue UsuarioNoRegistradoException
+    bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_NO_REGISTRADO)
   rescue NoHayMedicosDisponiblesException
     bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_NO_MEDICOS)
   rescue ErrorAPIMedicosDisponiblesException

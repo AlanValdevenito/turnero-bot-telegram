@@ -2,6 +2,7 @@ require_relative 'excepciones/no_hay_disponibilidad'
 require_relative 'excepciones/email_en_uso_exception'
 require_relative 'excepciones/errores_reserva_turno'
 require_relative 'excepciones/paciente_registrado_exception'
+require_relative 'excepciones/usuario_no_registrado'
 require_relative 'excepciones/errores_api'
 
 class Turnero
@@ -10,7 +11,8 @@ class Turnero
   end
 
   def usuario_registrado?(telegram_id)
-    @proveedor_turnero.usuario_registrado?(telegram_id)
+    registrado = @proveedor_turnero.usuario_registrado?(telegram_id)
+    raise UsuarioNoRegistradoException unless registrado
   end
 
   def registrar_paciente(email, telegram_id)

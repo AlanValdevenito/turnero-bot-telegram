@@ -56,4 +56,9 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:reservar_turno).and_return(resultado)
     expect { turnero.reservar_turno('12345', 'fecha', 'hora', 'Cardiologia') }.to raise_error(MedicoNoEncontradoException)
   end
+
+  it 'da error si el usuario no esta registrado' do
+    allow(proveedor_mock).to receive(:usuario_registrado?).and_return(false)
+    expect { turnero.usuario_registrado?(123) }.to raise_error(UsuarioNoRegistradoException)
+  end
 end
