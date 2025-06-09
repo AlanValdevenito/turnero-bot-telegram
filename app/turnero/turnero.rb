@@ -27,14 +27,20 @@ class Turnero
   end
 
   def solicitar_turnos_disponibles(matricula, especialidad)
-    turnos_hash = @proveedor_turnero.solicitar_turnos_disponibles(matricula, especialidad)
-    raise NohayTurnosDisponiblesException if turnos_hash.nil? || turnos_hash.empty?
+    resultado = @proveedor_turnero.solicitar_turnos_disponibles(matricula, especialidad)
 
-    turnos_hash.map do |hash|
-      Turno.new
-           .con_fecha(hash['fecha'])
-           .con_hora(hash['hora'])
+    unless resultado.exito?
+      case resultado.error
+      when /no hay turnos/i
+        raise NohayTurnosDisponiblesException
+      when /médico no encontrado/i
+        raise MedicoNoEncontradoException
+      else
+        raise ErrorAPITurnosDisponiblesException, resultado.error
+      end
     end
+
+    resultado.turnos
   end
 
   def reservar_turno(matricula, fecha, hora, telegram_id)

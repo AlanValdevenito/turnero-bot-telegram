@@ -14,15 +14,3 @@ def manejar_error_crear_usuario(response)
     raise StandardError, error
   end
 end
-
-def manejar_error_turnos_disponibles(response)
-  error = JSON.parse(response.body)['error']
-  case error
-  when /no hay turnos/i
-    raise NohayTurnosDisponiblesException
-  when /médico no encontrado/i
-    raise MedicoNoEncontradoException
-  else
-    raise ErrorAPITurnosDisponiblesException, error
-  end
-end

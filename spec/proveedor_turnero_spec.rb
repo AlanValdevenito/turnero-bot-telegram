@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'web_mock'
 require_relative '../app/turnero/proveedor_turnero/proveedor_turnero'
 require_relative '../app/turnero/proveedor_turnero/resultados.rb/resultado_reserva'
+require_relative '../app/turnero/proveedor_turnero/resultados.rb/resultado_turnos_disponibles'
 
 describe 'ProveedorTurnero' do
   let(:datos_usuario) { { email: 'test@test.com', telegram_id: 1234 } }
@@ -215,32 +216,54 @@ describe 'ProveedorTurnero' do
   end
 
   context 'when solicitar_turnos_disponibles' do
-    it 'obtiene la disponibilidad de turnos para un médico' do
-      matricula = '123'
+    def expect_resultado_exitoso_turnos_disponibles(resultado)
+      aggregate_failures do
+        expect(resultado).to be_a(ResultadoTurnosDisponibles)
+        expect(resultado.exito?).to be true
+        expect_turnos_coinciden(resultado.turnos, turnos_disponibles)
+      end
+    end
 
-      stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
+    def expect_turnos_coinciden(turnos_obj, turnos_hash)
+      expect(turnos_obj.size).to eq(turnos_hash.size)
+      turnos_obj.zip(turnos_hash).each do |turno_obj, turno_hash|
+        expect_turno_basico_coincide(turno_obj, turno_hash)
+      end
+    end
+
+    def expect_turno_basico_coincide(turno_obj, turno_hash)
+      aggregate_failures do
+        expect(turno_obj.fecha).to eq(turno_hash['fecha'])
+        expect(turno_obj.hora).to eq(turno_hash['hora'])
+      end
+    end
+    it 'devuelve ResultadoTurnosDisponibles con turnos si la respuesta es exitosa' do
+      stub_request(:get, "#{api_url}/turnos/123/disponibilidad")
         .to_return(status: 200, body: turnos_disponibles.to_json, headers: { 'Content-Type' => 'application/json' })
 
-      response = proveedor.solicitar_turnos_disponibles(matricula, 'fake_especialidad')
-      expect(response).to eq(turnos_disponibles)
+      resultado = proveedor.solicitar_turnos_disponibles('123', 'fake_especialidad')
+      expect_resultado_exitoso_turnos_disponibles(resultado)
     end
 
-    it 'maneja error al no haber turnos disponibles -> error' do
-      matricula = '123'
-      stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
+    it 'devuelve ResultadoTurnosDisponibles con error si no hay turnos disponibles' do
+      stub_request(:get, "#{api_url}/turnos/123/disponibilidad")
         .to_return(status: 400, body: { error: 'No hay turnos disponibles para este médico' }.to_json, headers: { 'Content-Type' => 'application/json' })
-      expect { proveedor.solicitar_turnos_disponibles(matricula, 'fake_especialidad') }.to raise_error(NohayTurnosDisponiblesException)
+
+      resultado = proveedor.solicitar_turnos_disponibles('123', 'fake_especialidad')
+      expect(resultado.exito?).to be false
+      expect(resultado.error).to eq('No hay turnos disponibles para este médico')
     end
 
-    it 'maneja errores al solicitar turnos disponibles de un medico inexistente -> error' do
-      matricula = '999'
-      stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
+    it 'devuelve ResultadoTurnosDisponibles con error si el médico no existe' do
+      stub_request(:get, "#{api_url}/turnos/123/disponibilidad")
         .to_return(status: 404, body: { error: 'Médico no encontrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
-      expect { proveedor.solicitar_turnos_disponibles(matricula, 'fake_especialidad') }.to raise_error(MedicoNoEncontradoException)
+      resultado = proveedor.solicitar_turnos_disponibles('123', 'fake_especialidad')
+      expect(resultado.exito?).to be false
+      expect(resultado.error).to eq('Médico no encontrado')
     end
 
-    it 'maneja errores de conexión al solicitar turnos disponibles' do
+    it 'lanza ErrorConexionAPI si hay un error de conexión' do
       matricula = '999'
       stub_request(:get, "#{api_url}/turnos/#{matricula}/disponibilidad")
         .to_raise(Faraday::Error.new('Error de conexión'))

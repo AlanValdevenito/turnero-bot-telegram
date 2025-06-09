@@ -4,6 +4,7 @@ require_relative '../excepciones/errores_api'
 require_relative '../excepciones/errores_conexion'
 require_relative '../excepciones/paciente_registrado_exception'
 require_relative './resultados.rb/resultado_reserva'
+require_relative './resultados.rb/resultado_turnos_disponibles'
 require_relative 'proveedor_turnero_helpers'
 
 class ProveedorTurnero
@@ -62,9 +63,11 @@ class ProveedorTurnero
     response = Faraday.get("#{@api_url}/turnos/#{matricula}/disponibilidad")
     case response.status
     when 200..299
-      JSON.parse(response.body)
+      turnos_disponibles = parsear_turnos(JSON.parse(response.body))
+      ResultadoTurnosDisponibles.new(exito: true, turnos: turnos_disponibles)
     when 400..499
-      manejar_error_turnos_disponibles(response)
+      error = JSON.parse(response.body)['error']
+      ResultadoTurnosDisponibles.new(exito: false, error:)
     when 500..599
       raise ErrorAPITurnosDisponiblesException
     else
@@ -105,5 +108,13 @@ class ProveedorTurnero
          .con_fecha(turno_hash['fecha'])
          .con_hora(turno_hash['hora'])
          .con_medico(medico)
+  end
+
+  def parsear_turnos(turnos_hash)
+    turnos_hash.map do |hash|
+      Turno.new
+           .con_fecha(hash['fecha'])
+           .con_hora(hash['hora'])
+    end
   end
 end
