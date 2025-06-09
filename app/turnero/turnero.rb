@@ -14,16 +14,13 @@ class Turnero
   end
 
   def solicitar_medicos_disponibles
-    medicos_hash = @proveedor_turnero.solicitar_medicos_disponibles
-    raise NoHayMedicosDisponiblesException if medicos_hash.nil? || medicos_hash.empty?
+    resultado = @proveedor_turnero.solicitar_medicos_disponibles
 
-    medicos_hash.map do |hash|
-      Medico.new
-            .con_nombre(hash['nombre'])
-            .con_apellido(hash['apellido'])
-            .con_matricula(hash['matricula'])
-            .con_especialidad(hash['especialidad'])
-    end
+    raise ErrorAPIMedicosDisponiblesException, resultado.error unless resultado.exito?
+
+    raise NoHayMedicosDisponiblesException if resultado.medicos.nil? || resultado.medicos.empty?
+
+    resultado.medicos
   end
 
   def solicitar_turnos_disponibles(matricula, especialidad)

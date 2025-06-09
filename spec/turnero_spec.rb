@@ -23,7 +23,8 @@ describe 'Turnero' do
   end
 
   it 'da error si no hay medicos disponibles' do
-    allow(proveedor_mock).to receive(:solicitar_medicos_disponibles).and_return(nil)
+    resultado = ResultadoMedicosDisponibles.new(exito: true, medicos: [])
+    allow(proveedor_mock).to receive(:solicitar_medicos_disponibles).and_return(resultado)
     expect { turnero.solicitar_medicos_disponibles }.to raise_error(NoHayMedicosDisponiblesException)
   end
 

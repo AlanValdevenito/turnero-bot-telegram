@@ -5,6 +5,7 @@ require_relative '../excepciones/errores_conexion'
 require_relative '../excepciones/paciente_registrado_exception'
 require_relative './resultados.rb/resultado_reserva'
 require_relative './resultados.rb/resultado_turnos_disponibles'
+require_relative './resultados.rb/resultado_medicos_disponibles'
 require_relative 'proveedor_turnero_helpers'
 
 class ProveedorTurnero
@@ -49,7 +50,11 @@ class ProveedorTurnero
     response = Faraday.get("#{@api_url}/turnos/medicos-disponibles")
     case response.status
     when 200..299
-      JSON.parse(response.body)
+      medicos = parsear_medicos(JSON.parse(response.body))
+      ResultadoMedicosDisponibles.new(exito: true, medicos:)
+    # when 400..499 -> por ahora la api no retorna error, da lista vacia
+    #   error = JSON.parse(response.body)['error']
+    #   ResultadoMedicosDisponibles.new(exito: false, error: error)
     when 500..599
       raise ErrorAPIMedicosDisponiblesException
     else
@@ -93,28 +98,5 @@ class ProveedorTurnero
     end
   rescue Faraday::Error
     raise ErrorConexionAPI
-  end
-
-  private
-
-  def parsear_turno(turno_hash)
-    medico_hash = turno_hash['medico']
-    medico = Medico.new
-                   .con_nombre(medico_hash['nombre'])
-                   .con_apellido(medico_hash['apellido'])
-                   .con_matricula(medico_hash['matricula'])
-                   .con_especialidad(medico_hash['especialidad'])
-    Turno.new
-         .con_fecha(turno_hash['fecha'])
-         .con_hora(turno_hash['hora'])
-         .con_medico(medico)
-  end
-
-  def parsear_turnos(turnos_hash)
-    turnos_hash.map do |hash|
-      Turno.new
-           .con_fecha(hash['fecha'])
-           .con_hora(hash['hora'])
-    end
   end
 end

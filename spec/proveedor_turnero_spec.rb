@@ -184,13 +184,49 @@ describe 'ProveedorTurnero' do
   end
 
   context 'when solicitar_medicos_disponibles' do
+    def expect_medicos_coinciden(medicos_obj, medicos_hash)
+      expect(medicos_obj.size).to eq(medicos_hash.size)
+      medicos_obj.zip(medicos_hash).each do |medico_obj, medico_hash|
+        expect_medico_coincide(medico_obj, medico_hash)
+      end
+    end
+
+    def expect_medico_coincide(medico_obj, medico_hash)
+      expect_medico_nombre_apellido(medico_obj, medico_hash)
+      expect_medico_matricula_especialidad(medico_obj, medico_hash)
+    end
+
+    def expect_medico_nombre_apellido(medico_obj, medico_hash)
+      aggregate_failures do
+        expect(medico_obj.nombre).to eq(medico_hash['nombre'])
+        expect(medico_obj.apellido).to eq(medico_hash['apellido'])
+      end
+    end
+
+    def expect_medico_matricula_especialidad(medico_obj, medico_hash)
+      aggregate_failures do
+        expect(medico_obj.matricula).to eq(medico_hash['matricula'])
+        expect(medico_obj.especialidad).to eq(medico_hash['especialidad'])
+      end
+    end
     it 'obtiene la lista de médicos disponibles con todos los campos' do
+      stub_request(:get, "#{api_url}/turnos/medicos-disponibles").to_return(status: 200, body: medicos_disponibles.to_json, headers: { 'Content-Type' => 'application/json' })
+
+      resultado = proveedor.solicitar_medicos_disponibles
+
+      expect(resultado).to be_a(ResultadoMedicosDisponibles)
+      expect(resultado.exito?).to be true
+      expect_medicos_coinciden(resultado.medicos, medicos_disponibles)
+    end
+
+    it 'los medicos son un array vacio si no hay disponibles' do
       stub_request(:get, "#{api_url}/turnos/medicos-disponibles")
-        .to_return(status: 200, body: medicos_disponibles.to_json, headers: { 'Content-Type' => 'application/json' })
+        .to_return(status: 200, body: [].to_json, headers: { 'Content-Type' => 'application/json' })
 
-      response = proveedor.solicitar_medicos_disponibles
+      resultado = proveedor.solicitar_medicos_disponibles
 
-      expect(response).to eq(medicos_disponibles)
+      expect(resultado.exito?).to be true
+      expect(resultado.medicos).to eq([])
     end
 
     it 'maneja errores de API al solicitar médicos disponibles' do
