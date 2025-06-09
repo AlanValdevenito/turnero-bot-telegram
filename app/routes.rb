@@ -57,7 +57,7 @@ class Routes
       [Telegram::Bot::Types::InlineKeyboardButton.new(text: "#{m.nombre} #{m.apellido}", callback_data:)]
     end
     markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
-    bot.api.send_message(chat_id: message.chat.id, text: 'Seleccione un Médico', reply_markup: markup)
+    bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_SELECCIONE_MEDICO, reply_markup: markup)
   rescue NoHayMedicosDisponiblesException
     bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_NO_MEDICOS)
   rescue ErrorAPIMedicosDisponiblesException
@@ -66,7 +66,7 @@ class Routes
     bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_ERROR_GENERAL)
   end
 
-  on_response_to 'Seleccione un Médico' do |bot, message|
+  on_response_to MENSAJE_SELECCIONE_MEDICO do |bot, message|
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     matricula, especialidad = message.data.split('-')
     begin
@@ -81,7 +81,7 @@ class Routes
         ]
       end
       markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
-      bot.api.send_message(chat_id: message.message.chat.id, text: 'Seleccione un turno', reply_markup: markup)
+      bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_SELECCIONE_TURNO, reply_markup: markup)
     rescue NohayTurnosDisponiblesException
       bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_NO_TURNOS)
     rescue ErrorAPITurnosDisponiblesException
@@ -91,7 +91,7 @@ class Routes
     end
   end
 
-  on_response_to 'Seleccione un turno' do |bot, message|
+  on_response_to MENSAJE_SELECCIONE_TURNO do |bot, message|
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     data = message.data.split('-')
     fecha = data[0..2].join('-') # "2025-06-05"
