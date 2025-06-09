@@ -31,4 +31,24 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:solicitar_turnos_disponibles).and_raise(NohayTurnosDisponiblesException)
     expect { turnero.solicitar_turnos_disponibles('12345', 'Cardiologia') }.to raise_error(NohayTurnosDisponiblesException)
   end
+
+  it 'reserva exitosa' do
+    medico = instance_double(Medico, nombre: 'Juan', apellido: 'Pérez', matricula: '12345', especialidad: 'Cardiología')
+    turno = instance_double(Turno, fecha: '2025-06-10', hora: '10:00', medico:)
+    resultado = ResultadoReserva.new(exito: true, turno:)
+    allow(proveedor_mock).to receive(:reservar_turno).and_return(resultado)
+    expect(turnero.reservar_turno('12345', '2025-06-10', '10:00', telegram_id)).to eq(turno)
+  end
+
+  it 'da error si el turno ya fue tomado' do
+    resultado = ResultadoReserva.new(exito: false, error: 'Ya existe un turno para ese médico y fecha/hora')
+    allow(proveedor_mock).to receive(:reservar_turno).and_return(resultado)
+    expect { turnero.reservar_turno('12345', 'fecha', 'hora', 'Cardiologia') }.to raise_error(TurnoYaExisteException)
+  end
+
+  it 'da error si el medico no fue encontrado al reservar turno' do
+    resultado = ResultadoReserva.new(exito: false, error: 'Médico no encontrado')
+    allow(proveedor_mock).to receive(:reservar_turno).and_return(resultado)
+    expect { turnero.reservar_turno('12345', 'fecha', 'hora', 'Cardiologia') }.to raise_error(MedicoNoEncontradoException)
+  end
 end

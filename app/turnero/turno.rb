@@ -11,18 +11,8 @@ class Turno
     self
   end
 
-  def con_matricula(matricula)
-    @matricula = matricula
-    self
-  end
-
   def con_medico(medico)
     @medico = medico
-    self
-  end
-
-  def con_especialidad(especialidad)
-    @especialidad = especialidad
     self
   end
 end

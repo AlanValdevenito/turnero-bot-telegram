@@ -26,15 +26,3 @@ def manejar_error_turnos_disponibles(response)
     raise ErrorAPITurnosDisponiblesException, error
   end
 end
-
-def manejar_error_reserva_turno(response)
-  error = JSON.parse(response.body)['error']
-  case error
-  when /médico no encontrado/i
-    raise MedicoNoEncontradoException
-  when /ya existe un turno/i
-    raise TurnoYaExisteException
-  else
-    raise StandardError, error
-  end
-end

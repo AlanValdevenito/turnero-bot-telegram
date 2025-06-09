@@ -3,6 +3,7 @@ require_relative '../excepciones/email_en_uso_exception'
 require_relative '../excepciones/errores_api'
 require_relative '../excepciones/errores_conexion'
 require_relative '../excepciones/paciente_registrado_exception'
+require_relative './resultados.rb/resultado_reserva'
 require_relative 'proveedor_turnero_helpers'
 
 class ProveedorTurnero
@@ -74,21 +75,35 @@ class ProveedorTurnero
   end
 
   def reservar_turno(matricula, fecha, hora, telegram_id)
-    payload = { matricula:, fecha:, hora:, telegram_id: }.to_json
-    response = Faraday.post("#{@api_url}/turnos", payload, { 'Content-Type' => 'application/json' })
-
+    response = Faraday.post("#{@api_url}/turnos", { matricula:, fecha:, hora:, telegram_id: }.to_json, { 'Content-Type' => 'application/json' })
     case response.status
     when 200..299
-      JSON.parse(response.body)
+      turno = parsear_turno(JSON.parse(response.body))
+      ResultadoReserva.new(exito: true, turno:)
     when 400..499
-      manejar_error_reserva_turno(response)
+      error = JSON.parse(response.body)['error']
+      ResultadoReserva.new(exito: false, error:)
     when 500..599
       raise ErrorAPIReservarTurnoException
     else
-      # Unhandled status code
       raise StandardError, "Unexpected status code: #{response.status}"
     end
   rescue Faraday::Error
     raise ErrorConexionAPI
+  end
+
+  private
+
+  def parsear_turno(turno_hash)
+    medico_hash = turno_hash['medico']
+    medico = Medico.new
+                   .con_nombre(medico_hash['nombre'])
+                   .con_apellido(medico_hash['apellido'])
+                   .con_matricula(medico_hash['matricula'])
+                   .con_especialidad(medico_hash['especialidad'])
+    Turno.new
+         .con_fecha(turno_hash['fecha'])
+         .con_hora(turno_hash['hora'])
+         .con_medico(medico)
   end
 end
