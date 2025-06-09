@@ -14,12 +14,16 @@ class Turnero
   end
 
   def solicitar_medicos_disponibles
-    # Tal vez sea mejor tener una clase medico para retornar los datos
-    # de los medicos disponibles, pero por ahora retornamos un hash -> objetos
-    medicos = @proveedor_turnero.solicitar_medicos_disponibles
-    raise NoHayMedicosDisponiblesException if medicos.nil? || medicos.empty?
+    medicos_hash = @proveedor_turnero.solicitar_medicos_disponibles
+    raise NoHayMedicosDisponiblesException if medicos_hash.nil? || medicos_hash.empty?
 
-    medicos
+    medicos_hash.map do |hash|
+      Medico.new
+            .con_nombre(hash['nombre'])
+            .con_apellido(hash['apellido'])
+            .con_matricula(hash['matricula'])
+            .con_especialidad(hash['especialidad'])
+    end
   end
 
   def solicitar_turnos_disponibles(matricula, especialidad)
