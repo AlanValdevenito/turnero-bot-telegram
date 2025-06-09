@@ -100,7 +100,7 @@ class Routes
     especialidad = data[5]       # "Traumatologia"
     telegram_id = data[6]        # "7158408552"
     turno = turnero.reservar_turno(matricula, fecha, hora, telegram_id)
-    response = format(MENSAJE_TURNO_CONFIRMADO, fecha: turno['fecha'], hora: turno['hora'], medico: "#{turno['medico']['nombre']} #{turno['medico']['apellido']}", especialidad:)
+    response = format(MENSAJE_TURNO_CONFIRMADO, fecha: turno.fecha, hora: turno.hora, medico: "#{turno.medico.nombre} #{turno.medico.apellido}", especialidad:)
     bot.api.send_message(chat_id: message.message.chat.id, text: response)
   rescue TurnoYaExisteException
     bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_TURNO_EXISTENTE)

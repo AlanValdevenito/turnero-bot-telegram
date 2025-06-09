@@ -39,6 +39,18 @@ class Turnero
   end
 
   def reservar_turno(matricula, fecha, hora, telegram_id)
-    @proveedor_turnero.reservar_turno(matricula, fecha, hora, telegram_id)
+    turno_hash = @proveedor_turnero.reservar_turno(matricula, fecha, hora, telegram_id)
+    medico_hash = turno_hash['medico']
+
+    medico = Medico.new
+                   .con_nombre(medico_hash['nombre'])
+                   .con_apellido(medico_hash['apellido'])
+
+    Turno.new
+         .con_fecha(turno_hash['fecha'])
+         .con_hora(turno_hash['hora'])
+         .con_matricula(matricula)
+         .con_medico(medico)
+         .con_especialidad(medico_hash['especialidad'])
   end
 end
