@@ -1,3 +1,5 @@
+require_relative '../medico'
+
 def parsear_turno(turno_hash)
   medico_hash = turno_hash['medico']
   medico = Medico.new
