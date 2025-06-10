@@ -1,0 +1,7 @@
+require_relative 'email_en_uso_exception'
+require_relative 'errores_api'
+require_relative 'errores_conexion'
+require_relative 'errores_reserva_turno'
+require_relative 'no_hay_disponibilidad'
+require_relative 'paciente_registrado_exception'
+require_relative 'usuario_no_registrado'
