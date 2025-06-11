@@ -369,4 +369,11 @@ describe 'BotClient' do
     then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
     BotClient.new('fake_token').run_once
   end
+
+  it 'muestra un mensaje si no esta registrado al pedir turnos proximos' do
+    stub_registrado(false)
+    when_i_send_text('fake_token', '/mis-turnos')
+    then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
+    BotClient.new('fake_token').run_once
+  end
 end

@@ -18,4 +18,5 @@ MENSAJE_AYUDA = <<~TEXT.freeze
   Comandos disponibles:
   /registrar {email} - Registra tu email en el sistema
   /pedir-turno - Solicita un turno médico
+  /mis-turnos - Muestra tus próximos turnos
 TEXT
