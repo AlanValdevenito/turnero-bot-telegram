@@ -35,6 +35,10 @@ class HistorialTurnosRoutes
     yield
   rescue NoHayTurnosEnHistorialException
     bot.api.send_message(chat_id:, text: MENSAJE_NO_HAY_TURNOS_HISTORIAL)
+  rescue ErrorAPIVerificarUsuarioException, ErrorConexionAPI
+    bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
+  rescue UsuarioNoRegistradoException
+    bot.api.send_message(chat_id:, text: MENSAJE_NO_REGISTRADO)
   rescue StandardError => e
     puts "Error completo: #{e.message}"
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
