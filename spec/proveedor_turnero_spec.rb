@@ -412,7 +412,7 @@ describe 'ProveedorTurnero' do
     it 'devuelve los próximos turnos del paciente' do
       turnos_proximos = definir_proximos_turnos_stub
 
-      resultado = proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id])
+      resultado = proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id]).turnos
 
       expect(resultado.size).to eq(2)
       expect_turno_proximo(resultado[0], turnos_proximos[0])

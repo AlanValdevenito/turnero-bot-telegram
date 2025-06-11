@@ -5,6 +5,7 @@ require_relative './resultados.rb/resultado_reserva'
 require_relative './resultados.rb/resultado_turnos_disponibles'
 require_relative './resultados.rb/resultado_medicos_disponibles'
 require_relative './resultados.rb/resultado_crear_usuario'
+require_relative './resultados.rb/resultado_proximos_turnos'
 require_relative 'proveedor_turnero_helpers'
 
 class ProveedorTurnero
@@ -104,7 +105,8 @@ class ProveedorTurnero
     response = Faraday.get("#{@api_url}/turnos/pacientes/telegram/#{telegram_id}/proximos")
     case response.status
     when 200..299
-      parsear_proximos_turnos(JSON.parse(response.body))
+      turnos = parsear_proximos_turnos(JSON.parse(response.body))
+      ResultadoProximosTurnos.new(exito: true, turnos:)
     end
   end
 end

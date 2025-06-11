@@ -75,6 +75,15 @@ class Turnero
   end
 
   def proximos_turnos_paciente(telegram_id)
-    @proveedor_turnero.solicitar_proximos_turnos(telegram_id)
+    resultado = @proveedor_turnero.solicitar_proximos_turnos(telegram_id)
+
+    unless resultado.exito?
+      case resultado.error
+      when /El paciente no tiene/i
+        raise NoHayProximosTurnosException
+      end
+    end
+
+    resultado.turnos
   end
 end

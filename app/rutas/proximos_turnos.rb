@@ -25,4 +25,13 @@ class ProximosTurnosRoutes
       "#{fecha} #{hora} - #{turno.medico.nombre} #{turno.medico.apellido} - #{turno.medico.especialidad} - ID: #{turno.id}"
     end.join("\n")
   end
+
+  def self.handle_error_proximos_turnos(bot, chat_id)
+    yield
+  rescue NoHayProximosTurnosException
+    bot.api.send_message(chat_id, text: MENSAJE_NO_HAY_PROXIMOS_TURNOS)
+  rescue StandardError => e
+    puts "Error completo: #{e.message}"
+    bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
+  end
 end

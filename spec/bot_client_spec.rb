@@ -348,7 +348,7 @@ describe 'BotClient' do
 
   xit 'muestra un mensaje de error si no hay turnos proximos' do
     token = 'fake_token'
-    stub_turnos_proximos_vacio
+    stub_turnos_proximos_fallido # vacio
     when_i_send_text(token, '/mis-turnos')
     then_i_get_text(token, MENSAJE_NO_HAY_TURNOS_PROXIMOS)
     BotClient.new(token).run_once

@@ -64,7 +64,14 @@ describe 'Turnero' do
 
   it 'proximos turnos exitoso' do
     turnos = [instance_double(Turno, fecha: '2025-06-10', hora: '10:00', medico: instance_double(Medico, nombre: 'Juan', apellido: 'Pérez', especialidad: 'Cardiología'))]
-    allow(proveedor_mock).to receive(:solicitar_proximos_turnos).and_return(turnos)
+    resultado = ResultadoProximosTurnos.new(exito: true, turnos:)
+    allow(proveedor_mock).to receive(:solicitar_proximos_turnos).and_return(resultado)
     expect(turnero.proximos_turnos_paciente(telegram_id)).to eq(turnos)
+  end
+
+  it 'da error si no hay proximos turnos' do
+    resultado = ResultadoProximosTurnos.new(exito: false, error: 'El paciente no tiene próximos turnos')
+    allow(proveedor_mock).to receive(:solicitar_proximos_turnos).and_return(resultado)
+    expect { turnero.proximos_turnos_paciente(telegram_id) }.to raise_error(NoHayProximosTurnosException)
   end
 end
