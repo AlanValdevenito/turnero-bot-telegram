@@ -362,4 +362,61 @@ describe 'ProveedorTurnero' do
       expect { proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:telegram_id]) }.to raise_error(StandardError, /Unexpected status code/)
     end
   end
+
+  context 'when proximos_turnos_paciente' do
+    def expect_turno_proximo(turno_obj, turno_hash)
+      expect_turno_id(turno_obj, turno_hash)
+      expect_turno_fecha_hora(turno_obj, turno_hash)
+      expect_turno_medico(turno_obj.medico, turno_hash['medico'])
+    end
+
+    def expect_turno_id(turno_obj, turno_hash)
+      expect(turno_obj.id).to eq(turno_hash['id'])
+    end
+
+    def expect_turno_fecha_hora(turno_obj, turno_hash)
+      fecha, hora = turno_hash['fecha y hora'].split(' ')
+      aggregate_failures do
+        expect(turno_obj.fecha).to eq(fecha)
+        expect(turno_obj.hora).to eq(hora)
+      end
+    end
+
+    def expect_turno_medico(medico_obj, medico_hash)
+      nombre, apellido = medico_hash.split(' ', 2)
+      aggregate_failures do
+        expect(medico_obj.nombre).to eq(nombre)
+        expect(medico_obj.apellido).to eq(apellido)
+      end
+    end
+
+    # Stub para definir los próximos turnos del paciente
+    def definir_proximos_turnos_stub
+      turnos_proximos = [{
+        'id' => 1,
+        'fecha y hora' => '2024-06-05 10:00',
+        'especialidad' => 'Clínica',
+        'medico' => 'Carlos Sanchez'
+      },
+                         {
+                           'id' => 2,
+                           'fecha y hora' => '2024-06-06 11:00',
+                           'especialidad' => 'Pediatría',
+                           'medico' => 'Maria Perez'
+                         }]
+
+      stub_request(:get, "#{api_url}/turnos/pacientes/telegram/#{datos_usuario[:telegram_id]}/proximos")
+        .to_return(status: 200, body: turnos_proximos.to_json, headers: { 'Content-Type' => 'application/json' })
+      turnos_proximos
+    end
+    it 'devuelve los próximos turnos del paciente' do
+      turnos_proximos = definir_proximos_turnos_stub
+
+      resultado = proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id])
+
+      expect(resultado.size).to eq(2)
+      expect_turno_proximo(resultado[0], turnos_proximos[0])
+      expect_turno_proximo(resultado[1], turnos_proximos[1])
+    end
+  end
 end

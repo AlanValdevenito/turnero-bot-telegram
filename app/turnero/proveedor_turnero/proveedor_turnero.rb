@@ -100,5 +100,11 @@ class ProveedorTurnero
     raise ErrorConexionAPI
   end
 
-  def solicitar_proximos_turnos(telegram_id); end
+  def solicitar_proximos_turnos(telegram_id)
+    response = Faraday.get("#{@api_url}/turnos/pacientes/telegram/#{telegram_id}/proximos")
+    case response.status
+    when 200..299
+      parsear_proximos_turnos(JSON.parse(response.body))
+    end
+  end
 end

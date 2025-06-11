@@ -33,3 +33,21 @@ def parsear_medicos(medicos)
           .con_especialidad(hash['especialidad'])
   end
 end
+
+def parsear_proximos_turnos(turnos_hash)
+  turnos_hash.map { |hash| build_turno_proximo(hash) }
+end
+
+def build_turno_proximo(hash)
+  nombre, apellido = hash['medico'].to_s.split(' ', 2)
+  fecha, hora = hash['fecha y hora'].split(' ')
+  medico = Medico.new
+                 .con_nombre(nombre)
+                 .con_apellido(apellido)
+                 .con_especialidad(hash['especialidad'])
+  Turno.new
+       .con_id(hash['id'])
+       .con_fecha(fecha)
+       .con_hora(hora)
+       .con_medico(medico)
+end

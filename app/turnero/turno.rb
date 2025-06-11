@@ -1,5 +1,10 @@
 class Turno
-  attr_accessor :fecha, :hora, :matricula, :medico, :especialidad
+  attr_accessor :id, :fecha, :hora, :medico
+
+  def con_id(id)
+    @id = id
+    self
+  end
 
   def con_fecha(fecha)
     @fecha = fecha
