@@ -385,7 +385,7 @@ describe 'BotClient' do
     BotClient.new(token).run_once
   end
 
-  xit 'muestra un mensaje de error si no hay turnos en el historial' do
+  it 'muestra un mensaje de error si no hay turnos en el historial' do
     token = 'fake_token'
     stub_historial_turnos_vacio
     when_i_send_text(token, '/historial-turnos')
