@@ -12,3 +12,6 @@ end
 
 class ErrorAPICrearUsuarioException < StandardError
 end
+
+class ErrorAPIProximosTurnosException < StandardError
+end

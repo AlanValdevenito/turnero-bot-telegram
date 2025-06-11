@@ -110,6 +110,12 @@ class ProveedorTurnero
     when 400..499
       error = JSON.parse(response.body)['error']
       ResultadoProximosTurnos.new(exito: false, error:)
+    when 500..599
+      raise ErrorAPIProximosTurnosException
+    else
+      raise StandardError, "Unexpected status code: #{response.status}"
     end
+  rescue Faraday::Error
+    raise ErrorConexionAPI
   end
 end

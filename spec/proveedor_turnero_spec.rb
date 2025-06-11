@@ -427,5 +427,26 @@ describe 'ProveedorTurnero' do
       expect(resultado.exito?).to be false
       expect(resultado.error).to eq('El paciente no tiene próximos turnos')
     end
+
+    it 'maneja errores de conexión al solicitar próximos turnos' do
+      stub_request(:get, "#{api_url}/turnos/pacientes/telegram/#{datos_usuario[:telegram_id]}/proximos")
+        .to_raise(Faraday::Error.new('Error de conexión'))
+
+      expect { proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id]) }.to raise_error(ErrorConexionAPI)
+    end
+
+    it 'maneja errores de API al solicitar próximos turnos' do
+      stub_request(:get, "#{api_url}/turnos/pacientes/telegram/#{datos_usuario[:telegram_id]}/proximos")
+        .to_return(status: 500, body: { error: 'Error interno del servidor' }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+      expect { proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id]) }.to raise_error(ErrorAPIProximosTurnosException)
+    end
+
+    it 'devuelve un error genérico si la API devuelve un código de estado inesperado' do
+      stub_request(:get, "#{api_url}/turnos/pacientes/telegram/#{datos_usuario[:telegram_id]}/proximos")
+        .to_return(status: 300, body: { error: '300' }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+      expect { proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id]) }.to raise_error(StandardError, /Unexpected status code/)
+    end
   end
 end
