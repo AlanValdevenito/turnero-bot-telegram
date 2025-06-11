@@ -20,7 +20,9 @@ class ProximosTurnosRoutes
 
   def self.formatear_turnos_proximos(turnos)
     turnos.map do |turno|
-      "#{turno.fecha_hora.strftime('%Y-%m-%d %H:%M')} - #{turno.medico.nombre} #{turno.medico.apellido} - #{turno.medico.especialidad.nombre} - ID: #{turno.id}"
+      fecha = turno.fecha
+      hora = turno.hora
+      "#{fecha} #{hora} - #{turno.medico.nombre} #{turno.medico.apellido} - #{turno.medico.especialidad} - ID: #{turno.id}"
     end.join("\n")
   end
 end
