@@ -38,16 +38,26 @@ def parsear_proximos_turnos(turnos_hash)
   turnos_hash.map { |hash| build_turno_proximo(hash) }
 end
 
-def build_turno_proximo(hash)
-  nombre, apellido = hash['medico'].to_s.split(' ', 2)
-  fecha, hora = hash['fecha y hora'].split(' ')
-  medico = Medico.new
-                 .con_nombre(nombre)
-                 .con_apellido(apellido)
-                 .con_especialidad(hash['especialidad'])
+def parsear_historial_turnos(turnos_hash)
+  turnos_hash.map { |hash| build_turno_proximo(hash) }
+end
+
+def construir_medico(nombre, apellido, especialidad)
+  Medico.new.con_nombre(nombre).con_apellido(apellido).con_especialidad(especialidad)
+end
+
+def construir_turno(id, fecha, hora, medico, estado)
   Turno.new
-       .con_id(hash['id'])
+       .con_id(id)
        .con_fecha(fecha)
        .con_hora(hora)
        .con_medico(medico)
+       .con_estado(estado)
+end
+
+def build_turno_proximo(hash)
+  nombre, apellido = hash['medico'].to_s.split(' ', 2)
+  fecha, hora = hash['fecha y hora'].split(' ')
+  medico = construir_medico(nombre, apellido, hash['especialidad'])
+  construir_turno(hash['id'], fecha, hora, medico, hash['estado'])
 end

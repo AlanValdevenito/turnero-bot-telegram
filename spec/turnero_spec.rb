@@ -80,4 +80,11 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:solicitar_historial_turnos).and_return(resultado)
     expect { turnero.historial_turnos_paciente(telegram_id) }.to raise_error(NoHayTurnosEnHistorialException)
   end
+
+  it 'historial turnos exitoso' do
+    turnos = [instance_double(Turno, fecha: '2025-06-10', hora: '10:00', medico: instance_double(Medico, nombre: 'Juan', apellido: 'Pérez', especialidad: 'Cardiología'))]
+    resultado = ResultadoHistorialTurnos.new(exito: true, turnos:)
+    allow(proveedor_mock).to receive(:solicitar_historial_turnos).and_return(resultado)
+    expect(turnero.historial_turnos_paciente(telegram_id)).to eq(turnos)
+  end
 end

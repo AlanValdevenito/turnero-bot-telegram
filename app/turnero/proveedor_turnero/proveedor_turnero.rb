@@ -123,6 +123,9 @@ class ProveedorTurnero
   def solicitar_historial_turnos(telegram_id)
     response = Faraday.get("#{@api_url}/turnos/pacientes/historial/#{telegram_id}")
     case response.status
+    when 200..299
+      turnos = parsear_historial_turnos(JSON.parse(response.body))
+      ResultadoHistorialTurnos.new(exito: true, turnos:)
     when 400..499
       error = JSON.parse(response.body)['error']
       ResultadoHistorialTurnos.new(exito: false, error:)

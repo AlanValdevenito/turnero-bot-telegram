@@ -92,9 +92,10 @@ class Turnero
     resultado = @proveedor_turnero.solicitar_historial_turnos(telegram_id)
     unless resultado.exito?
       case resultado.error
-      when /El paciente no tiene/i
+      when /El paciente no tiene turnos en su historial/i
         raise NoHayTurnosEnHistorialException
       end
     end
+    resultado.turnos
   end
 end

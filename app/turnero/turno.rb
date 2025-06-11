@@ -1,5 +1,5 @@
 class Turno
-  attr_accessor :id, :fecha, :hora, :medico
+  attr_accessor :id, :fecha, :hora, :medico, :estado
 
   def con_id(id)
     @id = id
@@ -18,6 +18,11 @@ class Turno
 
   def con_medico(medico)
     @medico = medico
+    self
+  end
+
+  def con_estado(estado)
+    @estado = estado
     self
   end
 end

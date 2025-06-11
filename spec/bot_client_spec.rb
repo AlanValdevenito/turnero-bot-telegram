@@ -377,7 +377,7 @@ describe 'BotClient' do
     BotClient.new('fake_token').run_once
   end
 
-  xit 'muestra un listado del historial de turnos del paciente' do
+  it 'muestra un listado del historial de turnos del paciente' do
     token = 'fake_token'
     stub_historial_turnos_exitoso
     when_i_send_text(token, '/historial-turnos')
