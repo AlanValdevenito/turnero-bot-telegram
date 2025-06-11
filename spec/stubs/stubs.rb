@@ -126,3 +126,25 @@ def stub_error_interno_api(tipo, ruta)
   stub_request(tipo, "#{ENV['API_URL']}#{ruta}")
     .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
+
+def stub_turnos_proximos_exitoso
+  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/telegram/#{USER_ID}/proximos")
+    .to_return(
+      status: 200,
+      body: [
+        {
+          "id": 1,
+          "fecha y hora": '2023-10-01 10:00',
+          "especialidad": 'Clinica',
+          "medico": 'Carlos Sanchez'
+        },
+        {
+          "id": 2,
+          "fecha y hora": '2023-10-02 11:00',
+          "especialidad": 'Pediatria',
+          "medico": 'Maria Perez'
+        }
+      ].to_json,
+      headers: { 'Content-Type' => 'application/json' }
+    )
+end
