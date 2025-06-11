@@ -155,7 +155,7 @@ def stub_turnos_proximos_fallido
   stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/telegram/#{USER_ID}/proximos")
     .to_return(
       status: 404,
-      body: { error: 'No se encontraron turnos próximos' }.to_json,
+      body: { error: 'El paciente no tiene próximos turnos' }.to_json,
       headers: { 'Content-Type' => 'application/json' }
     )
 end

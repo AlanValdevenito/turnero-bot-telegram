@@ -107,6 +107,9 @@ class ProveedorTurnero
     when 200..299
       turnos = parsear_proximos_turnos(JSON.parse(response.body))
       ResultadoProximosTurnos.new(exito: true, turnos:)
+    when 400..499
+      error = JSON.parse(response.body)['error']
+      ResultadoProximosTurnos.new(exito: false, error:)
     end
   end
 end

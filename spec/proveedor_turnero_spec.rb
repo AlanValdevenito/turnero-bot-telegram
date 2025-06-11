@@ -418,5 +418,14 @@ describe 'ProveedorTurnero' do
       expect_turno_proximo(resultado[0], turnos_proximos[0])
       expect_turno_proximo(resultado[1], turnos_proximos[1])
     end
+
+    it 'maneja el caso de no tener próximos turnos' do
+      stub_request(:get, "#{api_url}/turnos/pacientes/telegram/#{datos_usuario[:telegram_id]}/proximos")
+        .to_return(status: 400, body: { error: 'El paciente no tiene próximos turnos' }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+      resultado = proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id])
+      expect(resultado.exito?).to be false
+      expect(resultado.error).to eq('El paciente no tiene próximos turnos')
+    end
   end
 end

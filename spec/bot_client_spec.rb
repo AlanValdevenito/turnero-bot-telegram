@@ -346,7 +346,7 @@ describe 'BotClient' do
     BotClient.new(token).run_once
   end
 
-  xit 'muestra un mensaje de error si no hay turnos proximos' do
+  it 'muestra un mensaje de error si no hay turnos proximos' do
     token = 'fake_token'
     stub_turnos_proximos_fallido # vacio
     when_i_send_text(token, '/mis-turnos')
