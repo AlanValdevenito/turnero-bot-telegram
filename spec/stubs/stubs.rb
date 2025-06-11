@@ -159,3 +159,38 @@ def stub_turnos_proximos_fallido
       headers: { 'Content-Type' => 'application/json' }
     )
 end
+
+def stub_historial_turnos_vacio
+  stub_registrado(true)
+  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/historial/#{USER_ID}")
+    .to_return(
+      status: 400,
+      body: { error: 'El paciente no tiene turnos en su historial' }.to_json,
+      headers: { 'Content-Type' => 'application/json' }
+    )
+end
+
+def stub_historial_turnos_exitoso
+  stub_registrado(true)
+  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/historial/#{USER_ID}")
+    .to_return(
+      status: 200,
+      body: [
+        {
+          "id": 1,
+          "fecha y hora": '2023-10-01 10:00',
+          "especialidad": 'Clinica',
+          "medico": 'Carlos Sanchez',
+          "estado": 'Ausente'
+        },
+        {
+          "id": 2,
+          "fecha y hora": '2023-10-02 11:00',
+          "especialidad": 'Pediatria',
+          "medico": 'Maria Perez',
+          "estado": 'Cancelado'
+        }
+      ].to_json,
+      headers: { 'Content-Type' => 'application/json' }
+    )
+end

@@ -376,4 +376,20 @@ describe 'BotClient' do
     then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
     BotClient.new('fake_token').run_once
   end
+
+  xit 'muestra un listado del historial de turnos del paciente' do
+    token = 'fake_token'
+    stub_historial_turnos_exitoso
+    when_i_send_text(token, '/historial-turnos')
+    then_i_get_text(token, "Historial de turnos:\nID: 1 - Carlos Sanchez - Clinica - 2023-10-01 10:00 - Ausente\nID: 2 - Maria Perez - Pediatria - 2023-10-02 11:00 - Cancelado")
+    BotClient.new(token).run_once
+  end
+
+  xit 'muestra un mensaje de error si no hay turnos en el historial' do
+    token = 'fake_token'
+    stub_historial_turnos_vacio
+    when_i_send_text(token, '/historial-turnos')
+    then_i_get_text(token, MENSAJE_NO_HAY_TURNOS_HISTORIAL)
+    BotClient.new(token).run_once
+  end
 end
