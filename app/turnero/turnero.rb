@@ -4,6 +4,7 @@ require_relative 'excepciones/errores_reserva_turno'
 require_relative 'excepciones/paciente_registrado_exception'
 require_relative 'excepciones/usuario_no_registrado'
 require_relative 'excepciones/errores_api'
+require_relative 'excepciones/no_hay_turnos_historial_exception'
 
 class Turnero
   def initialize(proveedor_turnero)
@@ -85,5 +86,15 @@ class Turnero
     end
 
     resultado.turnos
+  end
+
+  def historial_turnos_paciente(telegram_id)
+    resultado = @proveedor_turnero.solicitar_historial_turnos(telegram_id)
+    unless resultado.exito?
+      case resultado.error
+      when /El paciente no tiene/i
+        raise NoHayTurnosEnHistorialException
+      end
+    end
   end
 end

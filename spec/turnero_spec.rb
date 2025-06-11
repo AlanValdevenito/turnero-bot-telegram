@@ -74,4 +74,10 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:solicitar_proximos_turnos).and_return(resultado)
     expect { turnero.proximos_turnos_paciente(telegram_id) }.to raise_error(NoHayProximosTurnosException)
   end
+
+  it 'da error si no hay turnos en el historial' do
+    resultado = ResultadoHistorialTurnos.new(exito: false, error: 'El paciente no tiene turnos en su historial')
+    allow(proveedor_mock).to receive(:solicitar_historial_turnos).and_return(resultado)
+    expect { turnero.historial_turnos_paciente(telegram_id) }.to raise_error(NoHayTurnosEnHistorialException)
+  end
 end

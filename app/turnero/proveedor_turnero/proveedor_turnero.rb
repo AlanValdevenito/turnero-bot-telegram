@@ -6,8 +6,9 @@ require_relative './resultados.rb/resultado_turnos_disponibles'
 require_relative './resultados.rb/resultado_medicos_disponibles'
 require_relative './resultados.rb/resultado_crear_usuario'
 require_relative './resultados.rb/resultado_proximos_turnos'
+require_relative './resultados.rb/resultado_historial_turnos'
 require_relative 'proveedor_turnero_helpers'
-
+# rubocop:disable Metrics/ClassLength
 class ProveedorTurnero
   def initialize(api_url)
     @api_url = api_url
@@ -118,4 +119,14 @@ class ProveedorTurnero
   rescue Faraday::Error
     raise ErrorConexionAPI
   end
+
+  def solicitar_historial_turnos(telegram_id)
+    response = Faraday.get("#{@api_url}/turnos/pacientes/historial/#{telegram_id}")
+    case response.status
+    when 400..499
+      error = JSON.parse(response.body)['error']
+      ResultadoHistorialTurnos.new(exito: false, error:)
+    end
+  end
 end
+# rubocop:enable Metrics/ClassLength
