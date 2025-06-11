@@ -99,4 +99,6 @@ class ProveedorTurnero
   rescue Faraday::Error
     raise ErrorConexionAPI
   end
+
+  def solicitar_proximos_turnos(telegram_id); end
 end

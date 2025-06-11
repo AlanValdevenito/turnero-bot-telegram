@@ -128,6 +128,7 @@ def stub_error_interno_api(tipo, ruta)
 end
 
 def stub_turnos_proximos_exitoso
+  stub_registrado(true)
   stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/telegram/#{USER_ID}/proximos")
     .to_return(
       status: 200,

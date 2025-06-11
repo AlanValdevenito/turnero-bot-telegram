@@ -10,6 +10,7 @@ class Routes
     PedirTurnoRoutes.register(self)
     AyudaRoutes.register(self)
     VersionRoutes.register(self)
+    ProximosTurnosRoutes.register(self)
     register_general_commands
   end
 

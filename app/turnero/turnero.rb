@@ -73,4 +73,8 @@ class Turnero
 
     resultado.turno
   end
+
+  def proximos_turnos_paciente(telegram_id)
+    @proveedor_turnero.solicitar_proximos_turnos(telegram_id)
+  end
 end

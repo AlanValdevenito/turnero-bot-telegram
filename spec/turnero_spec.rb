@@ -61,4 +61,10 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:usuario_registrado?).and_return(false)
     expect { turnero.usuario_registrado?(123) }.to raise_error(UsuarioNoRegistradoException)
   end
+
+  it 'proximos turnos exitoso' do
+    turnos = [instance_double(Turno, fecha: '2025-06-10', hora: '10:00', medico: instance_double(Medico, nombre: 'Juan', apellido: 'Pérez', especialidad: 'Cardiología'))]
+    allow(proveedor_mock).to receive(:solicitar_proximos_turnos).and_return(turnos)
+    expect(turnero.proximos_turnos_paciente(telegram_id)).to eq(turnos)
+  end
 end
