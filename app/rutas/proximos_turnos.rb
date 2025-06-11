@@ -27,7 +27,7 @@ class ProximosTurnosRoutes
     turnos.map do |turno|
       fecha = turno.fecha
       hora = turno.hora
-      "#{fecha} #{hora} - #{turno.medico.nombre} #{turno.medico.apellido} - #{turno.medico.especialidad} - ID: #{turno.id}"
+      "ID: #{turno.id} - #{turno.medico.nombre} #{turno.medico.apellido} - #{turno.medico.especialidad} - #{fecha} #{hora}"
     end.join("\n")
   end
 

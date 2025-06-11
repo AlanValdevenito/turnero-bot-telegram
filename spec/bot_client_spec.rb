@@ -342,7 +342,7 @@ describe 'BotClient' do
     token = 'fake_token'
     stub_turnos_proximos_exitoso
     when_i_send_text(token, '/mis-turnos')
-    then_i_get_text(token, "Tus próximos turnos:\n2023-10-01 10:00 - Carlos Sanchez - Clinica - ID: 1\n2023-10-02 11:00 - Maria Perez - Pediatria - ID: 2")
+    then_i_get_text(token, "Tus próximos turnos:\nID: 1 - Carlos Sanchez - Clinica - 2023-10-01 10:00\nID: 2 - Maria Perez - Pediatria - 2023-10-02 11:00")
     BotClient.new(token).run_once
   end
 
