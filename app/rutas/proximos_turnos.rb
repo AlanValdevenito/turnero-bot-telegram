@@ -35,6 +35,10 @@ class ProximosTurnosRoutes
     yield
   rescue NoHayProximosTurnosException
     bot.api.send_message(chat_id:, text: MENSAJE_NO_HAY_TURNOS_PROXIMOS)
+  rescue ErrorAPIProximosTurnosException
+    bot.api.send_message(chat_id:, text: MENSAJE_ERROR_API_PROXIMOS_TURNOS)
+  rescue ErrorConexionAPI
+    bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
   rescue StandardError => e
     puts "Error completo: #{e.message}"
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)

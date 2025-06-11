@@ -13,6 +13,7 @@ MENSAJE_TURNO_CONFIRMADO = "Turno agendado exitosamente:\nFecha: %<fecha>s\nHora
 MENSAJE_SELECCIONE_MEDICO = 'Seleccione un Médico'.freeze
 MENSAJE_SELECCIONE_TURNO = 'Seleccione un turno'.freeze
 MENSAJE_NO_HAY_TURNOS_PROXIMOS = 'No tiene turnos. Puede agendar uno con el comando /pedir-turno'.freeze
+MENSAJE_ERROR_API_PROXIMOS_TURNOS = 'Error al obtener los turnos próximos. Por favor intente nuevamente'.freeze
 MENSAJE_AYUDA = <<~TEXT.freeze
   Comandos disponibles:
   /registrar {email} - Registra tu email en el sistema

@@ -354,19 +354,19 @@ describe 'BotClient' do
     BotClient.new(token).run_once
   end
 
-  xit 'muestra un mensaje de error si hay un error al obtener turnos proximos' do
-    token = 'fake_token'
+  it 'muestra un mensaje de error si hay un error al obtener turnos proximos' do
+    stub_registrado(true)
     stub_error_interno_api(:get, "/turnos/pacientes/telegram/#{USER_ID}/proximos")
-    when_i_send_text(token, '/mis-turnos')
-    then_i_get_text(token, MENSAJE_ERROR_GENERAL)
-    BotClient.new(token).run_once
+    when_i_send_text('fake_token', '/mis-turnos')
+    then_i_get_text('fake_token', MENSAJE_ERROR_API_PROXIMOS_TURNOS)
+    BotClient.new('fake_token').run_once
   end
 
-  xit 'muestra un mensaje de error si hay un error al obtener turnos proximos por conexion' do
-    token = 'fake_token'
+  it 'muestra un mensaje de error si hay un error al obtener turnos proximos por conexion' do
+    stub_registrado(true)
     stub_error_conexion(:get, "/turnos/pacientes/telegram/#{USER_ID}/proximos")
-    when_i_send_text(token, '/mis-turnos')
-    then_i_get_text(token, MENSAJE_ERROR_GENERAL)
-    BotClient.new(token).run_once
+    when_i_send_text('fake_token', '/mis-turnos')
+    then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
+    BotClient.new('fake_token').run_once
   end
 end
