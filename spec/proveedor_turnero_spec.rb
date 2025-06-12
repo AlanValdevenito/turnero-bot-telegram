@@ -39,15 +39,15 @@ describe 'ProveedorTurnero' do
       .to_return(status: 400, body: { error: 'El paciente ya está registrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
   end
 
-  def crear_turno_exitoso(matricula, fecha, hora, telegram_id)
+  def crear_turno_exitoso(matricula, fecha, hora, email)
     stub_request(:post, "#{api_url}/turnos")
-      .with(body: { matricula:, fecha:, hora:, telegram_id: })
+      .with(body: { matricula:, fecha:, hora:, email: })
       .to_return(status: 200, body: { message: 'Turno reservado exitosamente' }.to_json, headers: { 'Content-Type' => 'application/json' })
   end
 
   def stub_reserva_turno_exitosa(matricula:, fecha:, hora:)
     stub_request(:post, "#{api_url}/turnos")
-      .with(body: { matricula:, fecha:, hora:, telegram_id: datos_usuario[:telegram_id] })
+      .with(body: { matricula:, fecha:, hora:, email: datos_usuario[:email] })
       .to_return(
         status: 200,
         body: {
@@ -66,7 +66,7 @@ describe 'ProveedorTurnero' do
 
   def stub_reserva_turno_error(status:, error:)
     stub_request(:post, "#{api_url}/turnos")
-      .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', telegram_id: datos_usuario[:telegram_id] })
+      .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', email: datos_usuario[:email] })
       .to_return(
         status:,
         body: { error: }.to_json,
@@ -114,20 +114,20 @@ describe 'ProveedorTurnero' do
     telegram_id = datos_usuario[:telegram_id]
 
     # Stub para usuario registrado
-    stub_request(:get, "#{api_url}/usuarios/telegram/#{telegram_id}")
-      .to_return(status: 200, body: { id: 1, email: datos_usuario[:email], telegram_id: }.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, "#{api_url}/usuarios/telegram/#{telegram_id}").to_return(status: 200, body: { id: 1, email: datos_usuario[:email], telegram_id: }.to_json, headers: { 'Content-Type' => 'application/json' })
 
-    expect(proveedor.usuario_registrado?(telegram_id)).to be true
+    resultado = proveedor.usuario_registrado?(telegram_id)
+    expect(resultado.exito?).to be true
   end
 
   it 'verifica si un usuario no está registrado' do
     telegram_id = datos_usuario[:telegram_id]
 
     # Stub para usuario no registrado
-    stub_request(:get, "#{api_url}/usuarios/telegram/#{telegram_id}")
-      .to_return(status: 404, body: { error: 'Usuario no encontrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
+    stub_request(:get, "#{api_url}/usuarios/telegram/#{telegram_id}").to_return(status: 404, body: { error: 'Usuario no encontrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
-    expect(proveedor.usuario_registrado?(telegram_id)).to be false
+    resultado = proveedor.usuario_registrado?(telegram_id)
+    expect(resultado.exito?).to be false
   end
 
   it 'maneja errores al verificar si un usuario está registrado' do
@@ -317,14 +317,14 @@ describe 'ProveedorTurnero' do
   context 'when reservar_turno' do
     it 'reserva un turno exitosamente' do
       stub_reserva_turno_exitosa(matricula: '123', fecha: '2024-06-05', hora: '10:00')
-      resultado = proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:telegram_id])
+      resultado = proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:email])
       expect_turno_reserva_exitosa(resultado, fecha: '2024-06-05', hora: '10:00', medico: { nombre: 'Carlos', apellido: 'Sanchez', matricula: '123', especialidad: 'Clínica' })
     end
 
     it 'devuelve ResultadoReserva con error si el turno no está disponible' do
       stub_reserva_turno_error(status: 400, error: 'Ya existe un turno para ese médico y fecha/hora')
 
-      resultado = proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:telegram_id])
+      resultado = proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:email])
       expect(resultado).to be_a(ResultadoReserva)
       expect(resultado.exito?).to be false
       expect(resultado.error).to eq('Ya existe un turno para ese médico y fecha/hora')
@@ -333,7 +333,7 @@ describe 'ProveedorTurnero' do
     it 'devuelve ResultadoReserva con error si el médico no existe' do
       stub_reserva_turno_error(status: 404, error: 'Médico no encontrado')
 
-      resultado = proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:telegram_id])
+      resultado = proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:email])
       expect(resultado).to be_a(ResultadoReserva)
       expect(resultado.exito?).to be false
       expect(resultado.error).to eq('Médico no encontrado')
@@ -341,25 +341,25 @@ describe 'ProveedorTurnero' do
 
     it 'maneja errores de API internos al reservar un turno' do
       stub_request(:post, "#{api_url}/turnos")
-        .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', telegram_id: datos_usuario[:telegram_id] })
+        .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', email: datos_usuario[:email] })
         .to_return(status: 500, body: { error: 'Error interno del servidor' }.to_json, headers: { 'Content-Type' => 'application/json' })
-      expect { proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:telegram_id]) }.to raise_error(ErrorAPIReservarTurnoException)
+      expect { proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:email]) }.to raise_error(ErrorAPIReservarTurnoException)
     end
 
     it 'maneja errores de conexión al reservar un turno' do
       stub_request(:post, "#{api_url}/turnos")
-        .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', telegram_id: datos_usuario[:telegram_id] })
+        .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', email: datos_usuario[:email] })
         .to_raise(Faraday::Error.new('Error de conexión'))
 
-      expect { proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:telegram_id]) }.to raise_error(ErrorConexionAPI)
+      expect { proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:email]) }.to raise_error(ErrorConexionAPI)
     end
 
     it 'devuelve un error genérico si la API devuelve un código de estado inesperado' do
       stub_request(:post, "#{api_url}/turnos")
-        .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', telegram_id: datos_usuario[:telegram_id] })
+        .with(body: { matricula: '123', fecha: '2024-06-05', hora: '10:00', email: datos_usuario[:email] })
         .to_return(status: 300, body: { error: '300' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
-      expect { proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:telegram_id]) }.to raise_error(StandardError, /Unexpected status code/)
+      expect { proveedor.reservar_turno('123', '2024-06-05', '10:00', datos_usuario[:email]) }.to raise_error(StandardError, /Unexpected status code/)
     end
   end
 
@@ -405,14 +405,14 @@ describe 'ProveedorTurnero' do
                            'medico' => 'Maria Perez'
                          }]
 
-      stub_request(:get, "#{api_url}/turnos/pacientes/telegram/#{datos_usuario[:telegram_id]}/proximos")
+      stub_request(:get, "#{api_url}/turnos/pacientes/proximos/#{datos_usuario[:email]}")
         .to_return(status: 200, body: turnos_proximos.to_json, headers: { 'Content-Type' => 'application/json' })
       turnos_proximos
     end
     it 'devuelve los próximos turnos del paciente' do
       turnos_proximos = definir_proximos_turnos_stub
 
-      resultado = proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id]).turnos
+      resultado = proveedor.solicitar_proximos_turnos(datos_usuario[:email]).turnos
 
       expect(resultado.size).to eq(2)
       expect_turno_proximo(resultado[0], turnos_proximos[0])
@@ -420,33 +420,33 @@ describe 'ProveedorTurnero' do
     end
 
     it 'maneja el caso de no tener próximos turnos' do
-      stub_request(:get, "#{api_url}/turnos/pacientes/telegram/#{datos_usuario[:telegram_id]}/proximos")
+      stub_request(:get, "#{api_url}/turnos/pacientes/proximos/#{datos_usuario[:email]}")
         .to_return(status: 400, body: { error: 'El paciente no tiene próximos turnos' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
-      resultado = proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id])
+      resultado = proveedor.solicitar_proximos_turnos(datos_usuario[:email])
       expect(resultado.exito?).to be false
       expect(resultado.error).to eq('El paciente no tiene próximos turnos')
     end
 
     it 'maneja errores de conexión al solicitar próximos turnos' do
-      stub_request(:get, "#{api_url}/turnos/pacientes/telegram/#{datos_usuario[:telegram_id]}/proximos")
+      stub_request(:get, "#{api_url}/turnos/pacientes/proximos/#{datos_usuario[:email]}")
         .to_raise(Faraday::Error.new('Error de conexión'))
 
-      expect { proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id]) }.to raise_error(ErrorConexionAPI)
+      expect { proveedor.solicitar_proximos_turnos(datos_usuario[:email]) }.to raise_error(ErrorConexionAPI)
     end
 
     it 'maneja errores de API al solicitar próximos turnos' do
-      stub_request(:get, "#{api_url}/turnos/pacientes/telegram/#{datos_usuario[:telegram_id]}/proximos")
+      stub_request(:get, "#{api_url}/turnos/pacientes/proximos/#{datos_usuario[:email]}")
         .to_return(status: 500, body: { error: 'Error interno del servidor' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
-      expect { proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id]) }.to raise_error(ErrorAPIProximosTurnosException)
+      expect { proveedor.solicitar_proximos_turnos(datos_usuario[:email]) }.to raise_error(ErrorAPIProximosTurnosException)
     end
 
     it 'devuelve un error genérico si la API devuelve un código de estado inesperado' do
-      stub_request(:get, "#{api_url}/turnos/pacientes/telegram/#{datos_usuario[:telegram_id]}/proximos")
+      stub_request(:get, "#{api_url}/turnos/pacientes/proximos/#{datos_usuario[:email]}")
         .to_return(status: 300, body: { error: '300' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
-      expect { proveedor.solicitar_proximos_turnos(datos_usuario[:telegram_id]) }.to raise_error(StandardError, /Unexpected status code/)
+      expect { proveedor.solicitar_proximos_turnos(datos_usuario[:email]) }.to raise_error(StandardError, /Unexpected status code/)
     end
   end
 end

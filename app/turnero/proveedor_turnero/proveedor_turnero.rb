@@ -7,6 +7,7 @@ require_relative './resultados.rb/resultado_medicos_disponibles'
 require_relative './resultados.rb/resultado_crear_usuario'
 require_relative './resultados.rb/resultado_proximos_turnos'
 require_relative './resultados.rb/resultado_historial_turnos'
+require_relative './resultados.rb/resultado_registrado'
 require_relative 'proveedor_turnero_helpers'
 # rubocop:disable Metrics/ClassLength
 class ProveedorTurnero
@@ -18,10 +19,12 @@ class ProveedorTurnero
     url = "#{@api_url}/usuarios/telegram/#{telegram_id}"
     response = Faraday.get(url)
     case response.status
-    when 200
-      true
+    when 200..299
+      email = JSON.parse(response.body)['email']
+      ResultadoRegistrado.new(exito: true, email:)
     when 404
-      false
+      error = JSON.parse(response.body)['error']
+      ResultadoRegistrado.new(exito: false, error:)
     else
       raise ErrorAPIVerificarUsuarioException
     end
@@ -84,8 +87,8 @@ class ProveedorTurnero
     raise ErrorConexionAPI
   end
 
-  def reservar_turno(matricula, fecha, hora, telegram_id)
-    response = Faraday.post("#{@api_url}/turnos", { matricula:, fecha:, hora:, telegram_id: }.to_json, { 'Content-Type' => 'application/json' })
+  def reservar_turno(matricula, fecha, hora, email)
+    response = Faraday.post("#{@api_url}/turnos", { matricula:, fecha:, hora:, email: }.to_json, { 'Content-Type' => 'application/json' })
     case response.status
     when 200..299
       turno = parsear_turno(JSON.parse(response.body))
@@ -102,8 +105,8 @@ class ProveedorTurnero
     raise ErrorConexionAPI
   end
 
-  def solicitar_proximos_turnos(telegram_id)
-    response = Faraday.get("#{@api_url}/turnos/pacientes/telegram/#{telegram_id}/proximos")
+  def solicitar_proximos_turnos(email)
+    response = Faraday.get("#{@api_url}/turnos/pacientes/proximos/#{email}")
     case response.status
     when 200..299
       turnos = parsear_proximos_turnos(JSON.parse(response.body))
@@ -120,8 +123,8 @@ class ProveedorTurnero
     raise ErrorConexionAPI
   end
 
-  def solicitar_historial_turnos(telegram_id)
-    response = Faraday.get("#{@api_url}/turnos/pacientes/historial/#{telegram_id}")
+  def solicitar_historial_turnos(email)
+    response = Faraday.get("#{@api_url}/turnos/pacientes/historial/#{email}")
     case response.status
     when 200..299
       turnos = parsear_historial_turnos(JSON.parse(response.body))

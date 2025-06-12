@@ -58,7 +58,7 @@ end
 def stub_reservar_turno_exitoso
   stub_request(:post, "#{ENV['API_URL']}/turnos")
     .with(
-      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', telegram_id: USER_ID.to_s }.to_json,
+      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', email: 'pepe@gmail' }.to_json,
       headers: { 'Content-Type' => 'application/json' }
     )
     .to_return(status: 200, body: {
@@ -73,7 +73,7 @@ end
 def stub_reservar_turno_fallido
   stub_request(:post, "#{ENV['API_URL']}/turnos")
     .with(
-      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', telegram_id: USER_ID.to_s }.to_json,
+      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', email: 'pepe@gmail' }.to_json,
       headers: { 'Content-Type' => 'application/json' }
     )
     .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
@@ -82,7 +82,7 @@ end
 def stub_reservar_turno_ya_reservado
   stub_request(:post, "#{ENV['API_URL']}/turnos")
     .with(
-      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', telegram_id: USER_ID.to_s }.to_json,
+      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', email: 'pepe@gmail' }.to_json,
       headers: { 'Content-Type' => 'application/json' }
     )
     .to_return(status: 400, body: { error: 'Ya existe un turno para ese médico y fecha/hora' }.to_json, headers: { 'Content-Type' => 'application/json' })
@@ -97,7 +97,7 @@ end
 def stub_registrado(exito)
   if exito
     stub_request(:get, "#{ENV['API_URL']}/usuarios/telegram/#{USER_ID}")
-      .to_return(status: 200, body: { id: 123, email: 'paciente@example.com', telegram_id: USER_ID }.to_json, headers: { 'Content-Type' => 'application/json' })
+      .to_return(status: 200, body: { id: 123, email: 'pepe@gmail', telegram_id: USER_ID }.to_json, headers: { 'Content-Type' => 'application/json' })
   else
     stub_request(:get, "#{ENV['API_URL']}/usuarios/telegram/#{USER_ID}")
       .to_return(status: 404, body: { error: 'Usuario no encontrado' }.to_json, headers: { 'Content-Type' => 'application/json' })
@@ -129,7 +129,7 @@ end
 
 def stub_turnos_proximos_exitoso
   stub_registrado(true)
-  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/telegram/#{USER_ID}/proximos")
+  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/proximos/pepe@gmail")
     .to_return(
       status: 200,
       body: [
@@ -152,7 +152,7 @@ end
 
 def stub_turnos_proximos_fallido
   stub_registrado(true)
-  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/telegram/#{USER_ID}/proximos")
+  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/proximos/pepe@gmail")
     .to_return(
       status: 404,
       body: { error: 'El paciente no tiene próximos turnos' }.to_json,
@@ -162,7 +162,7 @@ end
 
 def stub_historial_turnos_vacio
   stub_registrado(true)
-  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/historial/#{USER_ID}")
+  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/historial/pepe@gmail")
     .to_return(
       status: 400,
       body: { error: 'El paciente no tiene turnos en su historial' }.to_json,
@@ -172,7 +172,7 @@ end
 
 def stub_historial_turnos_exitoso
   stub_registrado(true)
-  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/historial/#{USER_ID}")
+  stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/historial/pepe@gmail")
     .to_return(
       status: 200,
       body: [

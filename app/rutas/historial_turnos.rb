@@ -17,8 +17,8 @@ class HistorialTurnosRoutes
 
   def self.procesar_historial_turnos(bot, message)
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
-    turnero.usuario_registrado?(message.from.id)
-    turnos = turnero.historial_turnos_paciente(message.from.id)
+    email = turnero.usuario_registrado?(message.from.id)
+    turnos = turnero.historial_turnos_paciente(email)
     turnos_mensaje = formatear_historial_turnos(turnos)
     bot.api.send_message(chat_id: message.chat.id, text: "Historial de turnos:\n#{turnos_mensaje}")
   end

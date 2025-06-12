@@ -1,10 +1,4 @@
-require_relative 'excepciones/no_hay_disponibilidad'
-require_relative 'excepciones/email_en_uso_exception'
-require_relative 'excepciones/errores_reserva_turno'
-require_relative 'excepciones/paciente_registrado_exception'
-require_relative 'excepciones/usuario_no_registrado'
-require_relative 'excepciones/errores_api'
-require_relative 'excepciones/no_hay_turnos_historial_exception'
+require_relative 'excepciones/index'
 
 class Turnero
   def initialize(proveedor_turnero)
@@ -12,8 +6,10 @@ class Turnero
   end
 
   def usuario_registrado?(telegram_id)
-    registrado = @proveedor_turnero.usuario_registrado?(telegram_id)
-    raise UsuarioNoRegistradoException unless registrado
+    resultado = @proveedor_turnero.usuario_registrado?(telegram_id)
+    raise UsuarioNoRegistradoException unless resultado.exito?
+
+    resultado.email
   end
 
   def registrar_paciente(email, telegram_id)
@@ -58,8 +54,8 @@ class Turnero
     resultado.turnos
   end
 
-  def reservar_turno(matricula, fecha, hora, telegram_id)
-    resultado = @proveedor_turnero.reservar_turno(matricula, fecha, hora, telegram_id)
+  def reservar_turno(matricula, fecha, hora, email)
+    resultado = @proveedor_turnero.reservar_turno(matricula, fecha, hora, email)
 
     unless resultado.exito?
       case resultado.error
@@ -75,8 +71,8 @@ class Turnero
     resultado.turno
   end
 
-  def proximos_turnos_paciente(telegram_id)
-    resultado = @proveedor_turnero.solicitar_proximos_turnos(telegram_id)
+  def proximos_turnos_paciente(email)
+    resultado = @proveedor_turnero.solicitar_proximos_turnos(email)
 
     unless resultado.exito?
       case resultado.error
@@ -88,8 +84,8 @@ class Turnero
     resultado.turnos
   end
 
-  def historial_turnos_paciente(telegram_id)
-    resultado = @proveedor_turnero.solicitar_historial_turnos(telegram_id)
+  def historial_turnos_paciente(email)
+    resultado = @proveedor_turnero.solicitar_historial_turnos(email)
     unless resultado.exito?
       case resultado.error
       when /El paciente no tiene turnos en su historial/i

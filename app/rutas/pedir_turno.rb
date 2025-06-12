@@ -22,8 +22,8 @@ class PedirTurnoRoutes
   def self.seleccionar_medico_on_response(routing)
     routing.on_response_to MENSAJE_SELECCIONE_MEDICO do |bot, message|
       handle_error_seleccionar_medico(bot, message.message.chat.id) do
-        matricula, especialidad = message.data.split('|')
-        markup = turnos_disponibles(matricula, especialidad, message.from.id)
+        matricula, especialidad, email = message.data.split('|')
+        markup = turnos_disponibles(matricula, especialidad, email)
         bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_SELECCIONE_TURNO, reply_markup: markup)
       end
     end
@@ -32,8 +32,8 @@ class PedirTurnoRoutes
   def self.seleccionar_turno_on_response(routing)
     routing.on_response_to MENSAJE_SELECCIONE_TURNO do |bot, message|
       handle_error_seleccionar_turno(bot, message.message.chat.id) do
-        fecha, hora, matricula, _especialidad, telegram_id = message.data.split('|')
-        response = reservar_turno(matricula, fecha, hora, telegram_id)
+        fecha, hora, matricula, _especialidad, email = message.data.split('|')
+        response = reservar_turno(matricula, fecha, hora, email)
         bot.api.send_message(chat_id: message.message.chat.id, text: response)
       end
     end
@@ -41,28 +41,28 @@ class PedirTurnoRoutes
 
   def self.pedir_turno(telegram_id)
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
-    turnero.usuario_registrado?(telegram_id)
+    email = turnero.usuario_registrado?(telegram_id)
     medicos = turnero.solicitar_medicos_disponibles
     kb = medicos.map do |m|
-      callback_data = "#{m.matricula}|#{m.especialidad}"
+      callback_data = "#{m.matricula}|#{m.especialidad}|#{email}"
       [Telegram::Bot::Types::InlineKeyboardButton.new(text: "#{m.nombre} #{m.apellido}", callback_data:)]
     end
     Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
   end
 
-  def self.turnos_disponibles(matricula, especialidad, telegram_id)
+  def self.turnos_disponibles(matricula, especialidad, email)
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     turnos = turnero.solicitar_turnos_disponibles(matricula, especialidad)
     kb = turnos.map do |t|
-      callback_data = "#{t.fecha}|#{t.hora}|#{matricula}|#{especialidad}|#{telegram_id}"
+      callback_data = "#{t.fecha}|#{t.hora}|#{matricula}|#{especialidad}|#{email}"
       [Telegram::Bot::Types::InlineKeyboardButton.new(text: "#{t.fecha} - #{t.hora}", callback_data:)]
     end
     Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
   end
 
-  def self.reservar_turno(matricula, fecha, hora, telegram_id)
+  def self.reservar_turno(matricula, fecha, hora, email)
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
-    turno = turnero.reservar_turno(matricula, fecha, hora, telegram_id)
+    turno = turnero.reservar_turno(matricula, fecha, hora, email)
     format(MENSAJE_TURNO_CONFIRMADO, fecha: turno.fecha, hora: turno.hora, medico: "#{turno.medico.nombre} #{turno.medico.apellido}", especialidad: turno.medico.especialidad)
   end
 
