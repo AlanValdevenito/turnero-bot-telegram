@@ -16,8 +16,8 @@ class ProveedorTurnero
   end
 
   def usuario_registrado?(telegram_id)
-    url = "#{@api_url}/usuarios/telegram/#{telegram_id}"
-    response = Faraday.get(url)
+    correlation_id = Thread.current[:cid]
+    response = Faraday.get("#{@api_url}/usuarios/telegram/#{telegram_id}", {}, { 'cid' => correlation_id })
     case response.status
     when 200..299
       email = JSON.parse(response.body)['email']
@@ -33,8 +33,10 @@ class ProveedorTurnero
   end
 
   def crear_usuario(email, telegram_id)
-    payload = { email:, telegram_id: }.to_json
-    response = Faraday.post("#{@api_url}/usuarios", payload, { 'Content-Type' => 'application/json' })
+    correlation_id = Thread.current[:cid]
+    body = { email:, telegram_id: }.to_json
+    headers = { 'Content-Type' => 'application/json', 'cid' => correlation_id }
+    response = Faraday.post("#{@api_url}/usuarios", body, headers)
 
     case response.status
     when 200..299
@@ -52,14 +54,12 @@ class ProveedorTurnero
   end
 
   def solicitar_medicos_disponibles
-    response = Faraday.get("#{@api_url}/turnos/medicos-disponibles")
+    correlation_id = Thread.current[:cid]
+    response = Faraday.get("#{@api_url}/turnos/medicos-disponibles", {}, { 'cid' => correlation_id })
     case response.status
     when 200..299
       medicos = parsear_medicos(JSON.parse(response.body))
       ResultadoMedicosDisponibles.new(exito: true, medicos:)
-    # when 400..499 -> por ahora la api no retorna error, da lista vacia
-    #   error = JSON.parse(response.body)['error']
-    #   ResultadoMedicosDisponibles.new(exito: false, error: error)
     when 500..599
       raise ErrorAPIMedicosDisponiblesException
     else
@@ -70,7 +70,8 @@ class ProveedorTurnero
   end
 
   def solicitar_turnos_disponibles(matricula, _especialidad)
-    response = Faraday.get("#{@api_url}/turnos/#{matricula}/disponibilidad")
+    correlation_id = Thread.current[:cid]
+    response = Faraday.get("#{@api_url}/turnos/#{matricula}/disponibilidad", {}, { 'cid' => correlation_id })
     case response.status
     when 200..299
       turnos_disponibles = parsear_turnos(JSON.parse(response.body))
@@ -88,25 +89,18 @@ class ProveedorTurnero
   end
 
   def reservar_turno(matricula, fecha, hora, email)
-    response = Faraday.post("#{@api_url}/turnos", { matricula:, fecha:, hora:, email: }.to_json, { 'Content-Type' => 'application/json' })
-    case response.status
-    when 200..299
-      turno = parsear_turno(JSON.parse(response.body))
-      ResultadoReserva.new(exito: true, turno:)
-    when 400..499
-      error = JSON.parse(response.body)['error']
-      ResultadoReserva.new(exito: false, error:)
-    when 500..599
-      raise ErrorAPIReservarTurnoException
-    else
-      raise StandardError, "Unexpected status code: #{response.status}"
-    end
+    correlation_id = Thread.current[:cid]
+    body = { matricula:, fecha:, hora:, email: }.to_json
+    headers = { 'Content-Type' => 'application/json', 'cid' => correlation_id }
+    response = Faraday.post("#{@api_url}/turnos", body, headers)
+    manejar_respuesta_reserva(response)
   rescue Faraday::Error
     raise ErrorConexionAPI
   end
 
   def solicitar_proximos_turnos(email)
-    response = Faraday.get("#{@api_url}/turnos/pacientes/proximos/#{email}")
+    correlation_id = Thread.current[:cid]
+    response = Faraday.get("#{@api_url}/turnos/pacientes/proximos/#{email}", {}, { 'cid' => correlation_id })
     case response.status
     when 200..299
       turnos = parsear_proximos_turnos(JSON.parse(response.body))
@@ -124,7 +118,8 @@ class ProveedorTurnero
   end
 
   def solicitar_historial_turnos(email)
-    response = Faraday.get("#{@api_url}/turnos/pacientes/historial/#{email}")
+    correlation_id = Thread.current[:cid]
+    response = Faraday.get("#{@api_url}/turnos/pacientes/historial/#{email}", {}, { 'cid' => correlation_id })
     case response.status
     when 200..299
       turnos = parsear_historial_turnos(JSON.parse(response.body))
@@ -132,6 +127,21 @@ class ProveedorTurnero
     when 400..499
       error = JSON.parse(response.body)['error']
       ResultadoHistorialTurnos.new(exito: false, error:)
+    end
+  end
+
+  private
+
+  def manejar_respuesta_reserva(response)
+    case response.status
+    when 200..299
+      ResultadoReserva.new(exito: true, turno: parsear_turno(JSON.parse(response.body)))
+    when 400..499
+      ResultadoReserva.new(exito: false, error: JSON.parse(response.body)['error'])
+    when 500..599
+      raise ErrorAPIReservarTurnoException
+    else
+      raise StandardError, "Unexpected status code: #{response.status}"
     end
   end
 end
