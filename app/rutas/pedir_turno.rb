@@ -58,13 +58,27 @@ class PedirTurnoRoutes
 
   def self.seleccionar_turno_on_response(routing)
     routing.on_response_to MENSAJE_SELECCIONE_TURNO do |bot, message|
+      if message.data == DESHABILITAR
+        responder_turno_deshabilitado(bot, message)
+        next
+      end
       ErroresTurno.handle_error_seleccionar_turno(bot, message.message.chat.id) do
-        fecha, hora, matricula, _especialidad, email = message.data.split('|')
-
-        response = reservar_turno(matricula, fecha, hora, email)
-        bot.api.send_message(chat_id: message.message.chat.id, text: response)
+        procesar_seleccion_turno(bot, message)
       end
     end
+  end
+
+  def self.procesar_seleccion_turno(bot, message)
+    TecladoDeshabilitado.disable_keyboard_buttons(bot, message, message.data)
+    fecha, hora, matricula, _especialidad, email = message.data.split('|')
+    response = reservar_turno(matricula, fecha, hora, email)
+    bot.api.send_message(chat_id: message.message.chat.id, text: response)
+  end
+
+  def self.responder_turno_deshabilitado(bot, message)
+    bot.api.answer_callback_query(callback_query_id: message.id, text: MENSAJE_TURNO_YA_SELECCIONADO)
+  rescue StandardError
+    bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_GENERAL)
   end
 
   def self.pedir_turno(telegram_id)
