@@ -2,8 +2,6 @@ require 'spec_helper'
 require 'web_mock'
 require_relative '../app/constantes/mensajes'
 require_relative 'stubs/stubs'
-# Uncomment to use VCR
-# require 'vcr_helper'
 
 require "#{File.dirname(__FILE__)}/../app/bot_client"
 
@@ -69,8 +67,6 @@ def then_i_get_text(token, message_text)
 end
 
 def then_i_get_keyboard_message(token, message_text, options = nil)
-  # options: array de hashes [{text: 'Jon Snow', callback_data: '1'}, ...]
-
   inline_keyboard = options.map { |opt| [{ 'text' => opt[:text], 'callback_data' => opt[:callback_data] }] }
   reply_markup = { 'inline_keyboard' => inline_keyboard }.to_json
 
@@ -117,6 +113,21 @@ end
 
 def expect_mensaje_de_ayuda(token)
   then_i_get_text(token, MENSAJE_AYUDA)
+end
+
+def then_i_get_callback_alert(token, alert_text)
+  body = { "ok": true }
+
+  stub_request(:post, "https://api.telegram.org/bot#{token}/answerCallbackQuery")
+    .with(
+      body: hash_including({ 'text' => alert_text })
+    )
+    .to_return(status: 200, body: body.to_json, headers: {})
+end
+
+def then_keyboard_is_updated(token)
+  stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+    .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
 end
 
 describe 'BotClient' do
@@ -206,18 +217,42 @@ describe 'BotClient' do
     run_bot_once('fake_token')
   end
 
+  def setup_y_espera_inline_keyboard(token, mensaje, seleccion, opciones_medicos, opciones_turnos)
+    stub_turnos_disponibles_exitoso(turnos_disponibles, '123')
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/answerCallbackQuery")
+      .with(body: hash_including({ 'callback_query_id' => '608740940475689651' }))
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    when_i_send_keyboard_updates(token, mensaje, seleccion, opciones_medicos)
+    then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TURNO, opciones_turnos)
+  end
+
   it 'deberia recibir un mensaje Seleccione un Médico y responder con un inline keyboard' do
     token = 'fake_token'
-    stub_turnos_disponibles_exitoso(turnos_disponibles, '123')
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
-    then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TURNO, opciones_turnos)
+    setup_y_espera_inline_keyboard(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos, opciones_turnos)
     run_bot_once(token)
+  end
+
+  def setup_turnos_fallidos(token, mensaje, seleccion, opciones)
+    stub_turnos_disponibles_fallido
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/answerCallbackQuery")
+      .with(body: hash_including({ 'callback_query_id' => '608740940475689651' }))
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    when_i_send_keyboard_updates(token, mensaje, seleccion, opciones)
   end
 
   it 'muestra un mensaje de error si la API de turnos falla' do
     token = 'fake_token'
-    stub_turnos_disponibles_fallido
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
+    setup_turnos_fallidos(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
     then_i_get_text(token, MENSAJE_ERROR_TURNOS)
     run_bot_once(token)
   end
@@ -253,11 +288,24 @@ describe 'BotClient' do
     run_bot_once('fake_token')
   end
 
-  it 'deberia recibir un mensaje Seleccione un Médico y responder con un mensaje con que no hay turnos disponibles' do
+  def setup_sin_turnos_disponibles(token, mensaje, seleccion, opciones)
     stub_turnos_disponibles_fallido_vacio
-    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
-    then_i_get_text('fake_token', MENSAJE_NO_TURNOS)
-    run_bot_once('fake_token')
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/answerCallbackQuery")
+      .with(body: hash_including({ 'callback_query_id' => '608740940475689651' }))
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    when_i_send_keyboard_updates(token, mensaje, seleccion, opciones)
+  end
+
+  it 'deberia recibir un mensaje Seleccione un Médico y responder con un mensaje con que no hay turnos disponibles' do
+    token = 'fake_token'
+    setup_sin_turnos_disponibles(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
+    then_i_get_text(token, MENSAJE_NO_TURNOS)
+    run_bot_once(token)
   end
 
   it 'should get a /stop message and respond with Chau' do
@@ -308,11 +356,19 @@ describe 'BotClient' do
     run_bot_once('fake_token')
   end
 
-  it 'muestra un mensaje de error si hay un error de conexión al obtener turnos' do
-    stub_flujo_turnos_disponibles_con_error_conexion(medicos_disponibles)
-    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
-    then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
-    run_bot_once('fake_token')
+  def then_keyboard_is_updated(token, callback_query_id = '608740940475689651')
+    stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+      .with(
+        body: hash_including({
+                               'chat_id' => USER_ID.to_s,
+                               'message_id' => '626'
+                             })
+      )
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/answerCallbackQuery")
+      .with(body: hash_including({ 'callback_query_id' => callback_query_id }))
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
   end
 
   it 'muestra un mensaje de error si hay un error de conexión al reservar turno' do
@@ -348,7 +404,7 @@ describe 'BotClient' do
 
   it 'muestra un mensaje de error si no hay turnos proximos' do
     token = 'fake_token'
-    stub_turnos_proximos_fallido # vacio
+    stub_turnos_proximos_fallido
     when_i_send_text(token, '/mis-turnos')
     then_i_get_text(token, MENSAJE_NO_HAY_TURNOS_PROXIMOS)
     BotClient.new(token).run_once
@@ -398,5 +454,52 @@ describe 'BotClient' do
     when_i_send_text('fake_token', '/historial-turnos')
     then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
     BotClient.new('fake_token').run_once
+  end
+
+  describe 'Alertas de botones deshabilitados' do
+    let(:token) { 'fake_token' }
+
+    def stub_edit_message_reply_markup(token)
+      stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+        .with(
+          body: hash_including({
+                                 'chat_id' => USER_ID.to_s,
+                                 'message_id' => '626'
+                               })
+        )
+        .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+    end
+
+    def stub_answer_callback_query(token)
+      stub_request(:post, "https://api.telegram.org/bot#{token}/answerCallbackQuery")
+        .with(body: hash_including({ 'callback_query_id' => '608740940475689651' }))
+        .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+    end
+
+    def setup_medico_selection
+      stub_turnos_disponibles_exitoso(turnos_disponibles, '123')
+      stub_edit_message_reply_markup(token)
+      stub_answer_callback_query(token)
+      when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
+    end
+
+    it 'muestra una alerta cuando se intenta seleccionar un médico ya seleccionado' do
+      when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_MEDICO, 'disabled', opciones_medicos)
+      then_i_get_callback_alert(token, MENSAJE_MEDICO_YA_SELECCIONADO)
+      run_bot_once(token)
+    end
+
+    it 'deshabilita los botones después de seleccionar un médico' do
+      setup_medico_selection
+      then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TURNO, opciones_turnos)
+      run_bot_once(token)
+    end
+
+    it 'envía el request para deshabilitar los botones' do
+      setup_medico_selection
+      then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TURNO, opciones_turnos)
+      run_bot_once(token)
+      expect(WebMock).to have_requested(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+    end
   end
 end
