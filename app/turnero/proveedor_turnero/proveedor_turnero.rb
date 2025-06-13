@@ -15,6 +15,12 @@ class ProveedorTurnero
     @api_url = api_url
   end
 
+  def version
+    correlation_id = Thread.current[:cid]
+    response = Faraday.get("#{@api_url}/version", {}, { 'cid' => correlation_id })
+    JSON.parse(response.body)['version']
+  end
+
   def usuario_registrado?(telegram_id)
     correlation_id = Thread.current[:cid]
     response = Faraday.get("#{@api_url}/usuarios/telegram/#{telegram_id}", {}, { 'cid' => correlation_id })

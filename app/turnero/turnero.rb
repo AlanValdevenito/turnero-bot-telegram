@@ -5,6 +5,10 @@ class Turnero
     @proveedor_turnero = proveedor_turnero
   end
 
+  def version
+    @proveedor_turnero.version
+  end
+
   def usuario_registrado?(telegram_id)
     resultado = @proveedor_turnero.usuario_registrado?(telegram_id)
     raise UsuarioNoRegistradoException unless resultado.exito?

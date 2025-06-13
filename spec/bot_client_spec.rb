@@ -155,7 +155,7 @@ describe 'BotClient' do
   it 'should get a /version message and respond with current version' do
     stub_api
     when_i_send_text('fake_token', '/version')
-    then_i_get_text('fake_token', "Bot version: #{Version.current} - Api Version: 0.0.1")
+    then_i_get_text('fake_token', "BOT version: #{Version.current} - API version: 0.0.1")
 
     app = BotClient.new('fake_token')
 
