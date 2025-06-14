@@ -4,12 +4,14 @@ require_relative '../turnero/turnero'
 require_relative '../turnero/proveedor_turnero/proveedor_turnero'
 require_relative 'errores_turno'
 require_relative 'teclado_deshabilitado'
+require_relative 'routing_helper'
 
 DESHABILITAR = 'disabled'.freeze
 
 class PedirTurnoRoutes
   def self.register(routing)
     pedir_turno_on_message(routing)
+    seleccionar_tipo_reserva_on_response(routing)
     seleccionar_medico_on_response(routing)
     seleccionar_turno_on_response(routing)
   end
@@ -18,7 +20,7 @@ class PedirTurnoRoutes
     routing.on_message '/pedir-turno' do |bot, message|
       ErroresTurno.handle_error_pedir_turno(bot, message.chat.id) do
         markup = pedir_turno(message.from.id)
-        bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_SELECCIONE_MEDICO, reply_markup: markup)
+        bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_SELECCIONE_TIPO_RESERVA, reply_markup: markup)
       end
     end
   end
@@ -83,6 +85,15 @@ class PedirTurnoRoutes
 
   def self.pedir_turno(telegram_id)
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    turnero.usuario_registrado?(telegram_id)
+
+    kb = [[Telegram::Bot::Types::InlineKeyboardButton.new(text: 'Por medico', callback_data: 'pedir_turno_medico')]]
+
+    Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
+  end
+
+  def self.pedir_turno_por_medico(telegram_id)
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     email = turnero.usuario_registrado?(telegram_id)
     medicos = turnero.solicitar_medicos_disponibles
     kb = medicos.map do |m|
@@ -106,5 +117,9 @@ class PedirTurnoRoutes
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     turno = turnero.reservar_turno(matricula, fecha, hora, email)
     format(MENSAJE_TURNO_CONFIRMADO, fecha: turno.fecha, hora: turno.hora, medico: "#{turno.medico.nombre} #{turno.medico.apellido}", especialidad: turno.medico.especialidad)
+  end
+
+  def self.seleccionar_tipo_reserva_on_response(routing)
+    RoutingHelper.response_to(routing)
   end
 end

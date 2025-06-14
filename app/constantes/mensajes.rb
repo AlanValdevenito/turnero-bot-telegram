@@ -15,6 +15,7 @@ MENSAJE_SELECCIONE_TURNO = 'Seleccione un turno'.freeze
 MENSAJE_NO_HAY_TURNOS_PROXIMOS = 'No tiene próximos turnos. Puede agendar uno con el comando /pedir-turno'.freeze
 MENSAJE_ERROR_API_PROXIMOS_TURNOS = 'Error al obtener los turnos próximos. Por favor intente nuevamente'.freeze
 MENSAJE_NO_HAY_TURNOS_HISTORIAL = 'No tiene turnos en su historial'.freeze
+MENSAJE_SELECCIONE_TIPO_RESERVA = 'Seleccione el tipo de reserva'.freeze
 MENSAJE_AYUDA = <<~TEXT.freeze
   Comandos disponibles:
   /registrar {email} - Registra tu email en el sistema

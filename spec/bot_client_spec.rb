@@ -163,6 +163,12 @@ describe 'BotClient' do
     ]
   end
 
+  let(:opciones_tipo_reserva) do
+    [
+      { text: 'Por medico', callback_data: 'pedir_turno_medico' }
+    ]
+  end
+
   def setup_y_espera_inline_keyboard(token, mensaje, seleccion, opciones_medicos, opciones_turnos)
     stub_turnos_disponibles_exitoso(turnos_disponibles, '123')
 
@@ -258,6 +264,12 @@ describe 'BotClient' do
     stub_edit_message_reply_markup_turno(token)
   end
 
+  def cuando_pido_reservar_turno_por_medico
+    when_i_send_text('fake_token', '/pedir-turno')
+    then_i_get_keyboard_message('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
+    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_medico', opciones_tipo_reserva)
+  end
+
   it 'should get a /version message and respond with current version' do
     stub_api
     when_i_send_text('fake_token', '/version')
@@ -288,9 +300,9 @@ describe 'BotClient' do
 
   it 'deberia recibir un mensaje /pedir-turno y responder con un inline keyboard' do
     stub_registrado(true)
-    stub_medicos_disponibles_exitoso(medicos_disponibles)
+
     when_i_send_text('fake_token', '/pedir-turno')
-    then_i_get_keyboard_message('fake_token', MENSAJE_SELECCIONE_MEDICO, opciones_medicos)
+    then_i_get_keyboard_message('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
 
     run_bot_once('fake_token')
   end
@@ -306,7 +318,7 @@ describe 'BotClient' do
     stub_registrado(true)
     stub_medicos_disponibles_fallido
 
-    when_i_send_text('fake_token', '/pedir-turno')
+    cuando_pido_reservar_turno_por_medico
     then_i_get_text('fake_token', MENSAJE_ERROR_MEDICOS)
 
     run_bot_once('fake_token')
@@ -349,11 +361,13 @@ describe 'BotClient' do
     run_bot_once(token)
   end
 
-  it 'deberia recibir un mensaje /pedir-turno y responder con que no hay médicos disponibles' do
+  it 'deberia recibir un mensaje Seleccione un medico y responder con que no hay médicos disponibles' do
     stub_registrado(true)
     stub_medicos_disponibles_exitoso([])
-    when_i_send_text('fake_token', '/pedir-turno')
+
+    cuando_pido_reservar_turno_por_medico
     then_i_get_text('fake_token', MENSAJE_NO_MEDICOS)
+
     run_bot_once('fake_token')
   end
 
@@ -407,8 +421,10 @@ describe 'BotClient' do
   it 'muestra un mensaje de error si hay un error de conexión al obtener médicos' do
     stub_registrado(true)
     stub_error_conexion(:get, '/turnos/medicos-disponibles')
-    when_i_send_text('fake_token', '/pedir-turno')
+
+    cuando_pido_reservar_turno_por_medico
     then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
+
     run_bot_once('fake_token')
   end
 
@@ -499,8 +515,6 @@ describe 'BotClient' do
   end
 
   describe 'Alertas de botones deshabilitados' do
-    let(:token) { 'fake_token' }
-
     def opciones_turnos_con_seleccion
       [
         [{ 'text' => '[ 2023-10-01 - 10:00 ]', 'callback_data' => 'disabled' }],
@@ -541,9 +555,9 @@ describe 'BotClient' do
     end
 
     it 'muestra una alerta cuando se intenta seleccionar un médico al ya haber uno seleccionado' do
-      setup_alerta_medico_ya_seleccionado(token, opciones_medicos_con_seleccion)
-      then_i_get_callback_alert(token, MENSAJE_MEDICO_YA_SELECCIONADO)
-      run_bot_once(token)
+      setup_alerta_medico_ya_seleccionado('fake_token', opciones_medicos_con_seleccion)
+      then_i_get_callback_alert('fake_token', MENSAJE_MEDICO_YA_SELECCIONADO)
+      run_bot_once('fake_token')
     end
 
     def setup_alerta_turno_ya_seleccionado(token, opciones_turnos_con_seleccion)
@@ -553,27 +567,27 @@ describe 'BotClient' do
     end
 
     it 'muestra una alerta cuando se intenta seleccionar un turno al ya haber uno seleccionado' do
-      setup_alerta_turno_ya_seleccionado(token, opciones_turnos_con_seleccion)
-      then_i_get_callback_alert(token, MENSAJE_TURNO_YA_SELECCIONADO)
-      run_bot_once(token)
+      setup_alerta_turno_ya_seleccionado('fake_token', opciones_turnos_con_seleccion)
+      then_i_get_callback_alert('fake_token', MENSAJE_TURNO_YA_SELECCIONADO)
+      run_bot_once('fake_token')
     end
 
     it 'muestra una alerta cuando se intenta seleccionar un médico ya seleccionado (botón disabled)' do
-      stub_edit_message_reply_markup_alert(token)
-      stub_answer_callback_query_alert(token)
+      stub_edit_message_reply_markup_alert('fake_token')
+      stub_answer_callback_query_alert('fake_token')
 
-      when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_MEDICO, 'disabled', opciones_medicos)
-      then_i_get_callback_alert(token, MENSAJE_MEDICO_YA_SELECCIONADO)
-      run_bot_once(token)
+      when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_MEDICO, 'disabled', opciones_medicos)
+      then_i_get_callback_alert('fake_token', MENSAJE_MEDICO_YA_SELECCIONADO)
+      run_bot_once('fake_token')
     end
 
     it 'muestra una alerta cuando se intenta seleccionar un turno ya seleccionado (botón disabled)' do
-      stub_edit_message_reply_markup_alert(token)
-      stub_answer_callback_query_alert(token)
+      stub_edit_message_reply_markup_alert('fake_token')
+      stub_answer_callback_query_alert('fake_token')
 
-      when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, 'disabled', opciones_turnos)
-      then_i_get_callback_alert(token, MENSAJE_TURNO_YA_SELECCIONADO)
-      run_bot_once(token)
+      when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TURNO, 'disabled', opciones_turnos)
+      then_i_get_callback_alert('fake_token', MENSAJE_TURNO_YA_SELECCIONADO)
+      run_bot_once('fake_token')
     end
   end
 end
