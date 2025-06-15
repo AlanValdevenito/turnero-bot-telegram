@@ -261,6 +261,11 @@ describe 'BotClient' do
     stub_edit_message_reply_markup_turno(token)
   end
 
+  def setup_reserva_turno_penalizado(token)
+    stub_flujo_turno_penalizacion(turnos_disponibles)
+    stub_edit_message_reply_markup_turno(token)
+  end
+
   def setup_sin_turnos_disponibles(token, mensaje, seleccion, opciones)
     stub_turnos_disponibles_fallido_vacio
 
@@ -395,6 +400,14 @@ describe 'BotClient' do
       setup_turno_ya_reservado(token)
       when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
       then_i_get_text(token, MENSAJE_ERROR_TURNO_EXISTENTE)
+      run_bot_once(token)
+    end
+
+    xit 'muestra un mensaje de error si esta penalizado al reservar un turno' do
+      token = 'fake_token'
+      setup_reserva_turno_penalizado(token)
+      when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
+      then_i_get_text(token, MENSAJE_PENALIZACION)
       run_bot_once(token)
     end
 

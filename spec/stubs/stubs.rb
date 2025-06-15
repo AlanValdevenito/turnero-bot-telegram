@@ -93,6 +93,21 @@ def stub_reservar_turno_ya_reservado
     .to_return(status: 400, body: { error: 'Ya existe un turno para ese médico y fecha/hora' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
+def stub_reservar_turno_penalizado
+  stub_request(:post, "#{ENV['API_URL']}/turnos")
+    .with(
+      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', email: 'pepe@gmail' }.to_json,
+      headers: { 'Content-Type' => 'application/json' }
+    )
+    .to_return(status: 400, body: { error: 'Penalización por porcentaje de asistencia abajo del 80%' }.to_json, headers: { 'Content-Type' => 'application/json' })
+end
+
+def stub_flujo_turno_penalizacion(turnos_disponibles, matricula = '123')
+  stub_registrado(true)
+  stub_turnos_disponibles_exitoso(turnos_disponibles, matricula)
+  stub_reservar_turno_penalizado
+end
+
 def stub_flujo_turno_ya_reservado(turnos_disponibles, matricula = '123')
   stub_registrado(true)
   stub_turnos_disponibles_exitoso(turnos_disponibles, matricula)
