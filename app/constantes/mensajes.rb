@@ -10,12 +10,13 @@ MENSAJE_ERROR_TURNOS = 'Error al obtener turnos disponibles. Por favor intente n
 MENSAJE_ERROR_RESERVA = 'Error al agendar el turno. Por favor intente nuevamente'.freeze
 MENSAJE_ERROR_TURNO_EXISTENTE = 'Error al agendar el turno, el turno ya no está disponible'.freeze
 MENSAJE_TURNO_CONFIRMADO = "Turno agendado exitosamente:\nFecha: %<fecha>s\nHora: %<hora>s\nMédico: %<medico>s\nEspecialidad: %<especialidad>s".freeze
-MENSAJE_SELECCIONE_MEDICO = 'Seleccione un Médico'.freeze
+MENSAJE_SELECCIONE_MEDICO = 'Seleccione un médico'.freeze
 MENSAJE_SELECCIONE_TURNO = 'Seleccione un turno'.freeze
 MENSAJE_NO_HAY_TURNOS_PROXIMOS = 'No tiene próximos turnos. Puede agendar uno con el comando /pedir-turno'.freeze
 MENSAJE_ERROR_API_PROXIMOS_TURNOS = 'Error al obtener los turnos próximos. Por favor intente nuevamente'.freeze
 MENSAJE_NO_HAY_TURNOS_HISTORIAL = 'No tiene turnos en su historial'.freeze
 MENSAJE_SELECCIONE_TIPO_RESERVA = 'Seleccione el tipo de reserva'.freeze
+MENSAJE_SELECCIONE_ESPECIALIDAD = 'Seleccione una especialidad'.freeze
 MENSAJE_AYUDA = <<~TEXT.freeze
   Comandos disponibles:
   /registrar {email} - Registra tu email en el sistema

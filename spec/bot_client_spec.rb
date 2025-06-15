@@ -170,6 +170,21 @@ describe 'BotClient' do
     ]
   end
 
+  def opciones_especialidades
+    [
+      { text: 'Traumatologia', callback_data: 'Traumatologia|pepe@gmail' },
+      { text: 'Dermatologia', callback_data: 'Dermatologia|pepe@gmail' }
+    ]
+  end
+
+  def medicos_por_especialidad_disponibles
+    [
+      { 'nombre' => 'Carlos', 'apellido' => 'Sanchez', 'matricula' => '123', 'especialidad' => 'Traumatologia' },
+      { 'nombre' => 'Maria', 'apellido' => 'Perez', 'matricula' => '456', 'especialidad' => 'Traumatologia' },
+      { 'nombre' => 'Juan', 'apellido' => 'Ramirez', 'matricula' => '789', 'especialidad' => 'Traumatologia' }
+    ]
+  end
+
   def setup_y_espera_inline_keyboard(token, mensaje, seleccion, opciones_medicos, opciones_turnos)
     stub_turnos_disponibles_exitoso(turnos_disponibles, '123')
 
@@ -182,6 +197,20 @@ describe 'BotClient' do
 
     when_i_send_keyboard_updates(token, mensaje, seleccion, opciones_medicos)
     then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TURNO, opciones_turnos)
+  end
+
+  def setup_y_espera_inline_keyboard_medicos_por_especialidad(token, mensaje, seleccion, opciones_especialidades, opciones_medicos)
+    stub_medicos_por_especialidad_disponibles_exitoso(medicos_por_especialidad_disponibles, 'Traumatologia')
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/answerCallbackQuery")
+      .with(body: hash_including({ 'callback_query_id' => '608740940475689651' }))
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    when_i_send_keyboard_updates(token, mensaje, seleccion, opciones_especialidades)
+    then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_MEDICO, opciones_medicos)
   end
 
   def setup_turnos_fallidos(token, mensaje, seleccion, opciones)
@@ -326,9 +355,15 @@ describe 'BotClient' do
       run_bot_once('fake_token')
     end
 
-    it 'deberia recibir un mensaje Seleccione un Médico y responder con un inline keyboard' do
+    it 'deberia recibir un mensaje "Seleccione un médico" y responder con un inline keyboard' do
       token = 'fake_token'
       setup_y_espera_inline_keyboard(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos, opciones_turnos)
+      run_bot_once(token)
+    end
+
+    xit 'deberia recibir un mensaje "Seleccione una especialidad" y responder con un inline keyboard' do
+      token = 'fake_token'
+      setup_y_espera_inline_keyboard_medicos_por_especialidad(token, MENSAJE_SELECCIONE_ESPECIALIDAD, 'Traumatologia|pepe@gmail', opciones_especialidades, opciones_medicos)
       run_bot_once(token)
     end
 
@@ -363,7 +398,7 @@ describe 'BotClient' do
       run_bot_once(token)
     end
 
-    it 'deberia recibir un mensaje Seleccione un medico y responder con que no hay médicos disponibles' do
+    it 'deberia recibir un mensaje "Seleccione un médico" y responder con que no hay médicos disponibles' do
       stub_registrado(true)
       stub_medicos_disponibles_exitoso([])
 
@@ -373,7 +408,7 @@ describe 'BotClient' do
       run_bot_once('fake_token')
     end
 
-    it 'deberia recibir un mensaje Seleccione un Médico y responder con un mensaje con que no hay turnos disponibles' do
+    it 'deberia recibir un mensaje "Seleccione un médico" y responder con un mensaje con que no hay turnos disponibles' do
       token = 'fake_token'
       setup_sin_turnos_disponibles(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
       then_i_get_text(token, MENSAJE_NO_TURNOS)

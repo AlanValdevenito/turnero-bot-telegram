@@ -40,6 +40,11 @@ def stub_medicos_disponibles_fallido
     .to_return(status: 500, body: { error: 'Error interno' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
+def stub_medicos_por_especialidad_disponibles_exitoso(medicos, especialidad)
+  stub_request(:get, "#{ENV['API_URL']}/turnos/medicos-disponibles/#{especialidad}")
+    .to_return(status: 200, body: medicos.to_json, headers: { 'Content-Type' => 'application/json' })
+end
+
 def stub_turnos_disponibles_exitoso(turnos, matricula = '123')
   stub_request(:get, "#{ENV['API_URL']}/turnos/#{matricula}/disponibilidad")
     .to_return(status: 200, body: turnos.to_json, headers: { 'Content-Type' => 'application/json' })
