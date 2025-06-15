@@ -381,6 +381,17 @@ describe 'BotClient' do
     end
   end
 
+  describe 'cancelacion de turno' do
+    xit 'deberia recibir un mensaje /cancelar-turno y responde turno con estado cancelado' do
+      stub_registrado(true)
+
+      when_i_send_text('fake_token', '/cancelar-turno 1')
+      then_i_get_text('fake_token', TURNO_CANCELADO)
+
+      run_bot_once('fake_token')
+    end
+  end
+
   it 'should get a /stop message and respond with Chau' do
     token = 'fake_token'
 
