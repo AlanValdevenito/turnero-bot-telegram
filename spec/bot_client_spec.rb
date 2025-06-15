@@ -165,6 +165,7 @@ describe 'BotClient' do
 
   let(:opciones_tipo_reserva) do
     [
+      { text: 'Por especialidad', callback_data: 'pedir_turno_especialidad' },
       { text: 'Por medico', callback_data: 'pedir_turno_medico' }
     ]
   end
@@ -298,84 +299,86 @@ describe 'BotClient' do
     run_bot_once(token)
   end
 
-  it 'deberia recibir un mensaje /pedir-turno y responder con un inline keyboard' do
-    stub_registrado(true)
+  describe 'Reserva de turno' do
+    it 'deberia recibir un mensaje /pedir-turno y responder con dos inline keyboard' do
+      stub_registrado(true)
 
-    when_i_send_text('fake_token', '/pedir-turno')
-    then_i_get_keyboard_message('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
+      when_i_send_text('fake_token', '/pedir-turno')
+      then_i_get_keyboard_message('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
 
-    run_bot_once('fake_token')
-  end
+      run_bot_once('fake_token')
+    end
 
-  it 'deberia recibir un mensaje /pedir-turno y mostrar un mensaje de error si no esta registrado' do
-    stub_registrado(false)
-    when_i_send_text('fake_token', '/pedir-turno')
-    then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
-    run_bot_once('fake_token')
-  end
+    it 'deberia recibir un mensaje /pedir-turno y mostrar un mensaje de error si no esta registrado' do
+      stub_registrado(false)
+      when_i_send_text('fake_token', '/pedir-turno')
+      then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
+      run_bot_once('fake_token')
+    end
 
-  it 'muestra un mensaje de error si la API de médicos falla' do
-    stub_registrado(true)
-    stub_medicos_disponibles_fallido
+    it 'muestra un mensaje de error si la API de médicos falla' do
+      stub_registrado(true)
+      stub_medicos_disponibles_fallido
 
-    cuando_pido_reservar_turno_por_medico
-    then_i_get_text('fake_token', MENSAJE_ERROR_MEDICOS)
+      cuando_pido_reservar_turno_por_medico
+      then_i_get_text('fake_token', MENSAJE_ERROR_MEDICOS)
 
-    run_bot_once('fake_token')
-  end
+      run_bot_once('fake_token')
+    end
 
-  it 'deberia recibir un mensaje Seleccione un Médico y responder con un inline keyboard' do
-    token = 'fake_token'
-    setup_y_espera_inline_keyboard(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos, opciones_turnos)
-    run_bot_once(token)
-  end
+    it 'deberia recibir un mensaje Seleccione un Médico y responder con un inline keyboard' do
+      token = 'fake_token'
+      setup_y_espera_inline_keyboard(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos, opciones_turnos)
+      run_bot_once(token)
+    end
 
-  it 'muestra un mensaje de error si la API de turnos falla' do
-    token = 'fake_token'
-    setup_turnos_fallidos(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
-    then_i_get_text(token, MENSAJE_ERROR_TURNOS)
-    run_bot_once(token)
-  end
+    it 'muestra un mensaje de error si la API de turnos falla' do
+      token = 'fake_token'
+      setup_turnos_fallidos(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
+      then_i_get_text(token, MENSAJE_ERROR_TURNOS)
+      run_bot_once(token)
+    end
 
-  it 'deberia recibir un mensaje Seleccione un turno y responder con un mensaje de confirmación' do
-    token = 'fake_token'
-    setup_turno_confirmacion(token)
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
-    then_i_get_text(token, format(MENSAJE_TURNO_CONFIRMADO, fecha: '2023-10-01', hora: '10:00', medico: 'Carlos Sanchez', especialidad: 'Clinica'))
-    run_bot_once(token)
-  end
+    it 'deberia recibir un mensaje Seleccione un turno y responder con un mensaje de confirmación' do
+      token = 'fake_token'
+      setup_turno_confirmacion(token)
+      when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
+      then_i_get_text(token, format(MENSAJE_TURNO_CONFIRMADO, fecha: '2023-10-01', hora: '10:00', medico: 'Carlos Sanchez', especialidad: 'Clinica'))
+      run_bot_once(token)
+    end
 
-  it 'muestra un mensaje de error si la API de reservar turno falla' do
-    token = 'fake_token'
-    setup_reserva_turno_fallida(token)
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
-    then_i_get_text(token, MENSAJE_ERROR_RESERVA)
-    run_bot_once(token)
-  end
+    it 'muestra un mensaje de error si la API de reservar turno falla' do
+      token = 'fake_token'
+      setup_reserva_turno_fallida(token)
+      when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
+      then_i_get_text(token, MENSAJE_ERROR_RESERVA)
+      run_bot_once(token)
+    end
 
-  it 'muestra un mensaje de error si se quiere reservar un turno ya reservado' do
-    token = 'fake_token'
-    setup_turno_ya_reservado(token)
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
-    then_i_get_text(token, MENSAJE_ERROR_TURNO_EXISTENTE)
-    run_bot_once(token)
-  end
+    it 'muestra un mensaje de error si se quiere reservar un turno ya reservado' do
+      token = 'fake_token'
+      setup_turno_ya_reservado(token)
+      when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
+      then_i_get_text(token, MENSAJE_ERROR_TURNO_EXISTENTE)
+      run_bot_once(token)
+    end
 
-  it 'deberia recibir un mensaje Seleccione un medico y responder con que no hay médicos disponibles' do
-    stub_registrado(true)
-    stub_medicos_disponibles_exitoso([])
+    it 'deberia recibir un mensaje Seleccione un medico y responder con que no hay médicos disponibles' do
+      stub_registrado(true)
+      stub_medicos_disponibles_exitoso([])
 
-    cuando_pido_reservar_turno_por_medico
-    then_i_get_text('fake_token', MENSAJE_NO_MEDICOS)
+      cuando_pido_reservar_turno_por_medico
+      then_i_get_text('fake_token', MENSAJE_NO_MEDICOS)
 
-    run_bot_once('fake_token')
-  end
+      run_bot_once('fake_token')
+    end
 
-  it 'deberia recibir un mensaje Seleccione un Médico y responder con un mensaje con que no hay turnos disponibles' do
-    token = 'fake_token'
-    setup_sin_turnos_disponibles(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
-    then_i_get_text(token, MENSAJE_NO_TURNOS)
-    run_bot_once(token)
+    it 'deberia recibir un mensaje Seleccione un Médico y responder con un mensaje con que no hay turnos disponibles' do
+      token = 'fake_token'
+      setup_sin_turnos_disponibles(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
+      then_i_get_text(token, MENSAJE_NO_TURNOS)
+      run_bot_once(token)
+    end
   end
 
   it 'should get a /stop message and respond with Chau' do
@@ -452,66 +455,70 @@ describe 'BotClient' do
     BotClient.new(token).run_once
   end
 
-  it 'muestra un listado de turnos proximos del paciente' do
-    token = 'fake_token'
-    stub_turnos_proximos_exitoso
-    when_i_send_text(token, '/mis-turnos')
-    then_i_get_text(token, "Tus próximos turnos:\nID: 1 - Carlos Sanchez - Clinica - 2023-10-01 10:00\nID: 2 - Maria Perez - Pediatria - 2023-10-02 11:00")
-    BotClient.new(token).run_once
+  describe 'Proximos turnos de un paciente' do
+    it 'muestra un listado de turnos proximos del paciente' do
+      token = 'fake_token'
+      stub_turnos_proximos_exitoso
+      when_i_send_text(token, '/mis-turnos')
+      then_i_get_text(token, "Tus próximos turnos:\nID: 1 - Carlos Sanchez - Clinica - 2023-10-01 10:00\nID: 2 - Maria Perez - Pediatria - 2023-10-02 11:00")
+      BotClient.new(token).run_once
+    end
+
+    it 'muestra un mensaje de error si no hay turnos proximos' do
+      token = 'fake_token'
+      stub_turnos_proximos_fallido
+      when_i_send_text(token, '/mis-turnos')
+      then_i_get_text(token, MENSAJE_NO_HAY_TURNOS_PROXIMOS)
+      BotClient.new(token).run_once
+    end
+
+    it 'muestra un mensaje de error si hay un error al obtener turnos proximos' do
+      stub_registrado(true)
+      stub_error_interno_api(:get, '/turnos/pacientes/proximos/pepe@gmail')
+      when_i_send_text('fake_token', '/mis-turnos')
+      then_i_get_text('fake_token', MENSAJE_ERROR_API_PROXIMOS_TURNOS)
+      BotClient.new('fake_token').run_once
+    end
+
+    it 'muestra un mensaje de error si hay un error al obtener turnos proximos por conexion' do
+      stub_registrado(true)
+      stub_error_conexion(:get, '/turnos/pacientes/proximos/pepe@gmail')
+      when_i_send_text('fake_token', '/mis-turnos')
+      then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
+      BotClient.new('fake_token').run_once
+    end
+
+    it 'muestra un mensaje si no esta registrado al pedir turnos proximos' do
+      stub_registrado(false)
+      when_i_send_text('fake_token', '/mis-turnos')
+      then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
+      BotClient.new('fake_token').run_once
+    end
   end
 
-  it 'muestra un mensaje de error si no hay turnos proximos' do
-    token = 'fake_token'
-    stub_turnos_proximos_fallido
-    when_i_send_text(token, '/mis-turnos')
-    then_i_get_text(token, MENSAJE_NO_HAY_TURNOS_PROXIMOS)
-    BotClient.new(token).run_once
-  end
+  describe 'Historial de turnos de un paciente' do
+    it 'muestra un listado del historial de turnos del paciente' do
+      token = 'fake_token'
+      stub_historial_turnos_exitoso
+      when_i_send_text(token, '/historial-turnos')
+      then_i_get_text(token, "Historial de turnos:\nID: 1 - Carlos Sanchez - Clinica - 2023-10-01 10:00 - Ausente\nID: 2 - Maria Perez - Pediatria - 2023-10-02 11:00 - Cancelado")
+      BotClient.new(token).run_once
+    end
 
-  it 'muestra un mensaje de error si hay un error al obtener turnos proximos' do
-    stub_registrado(true)
-    stub_error_interno_api(:get, '/turnos/pacientes/proximos/pepe@gmail')
-    when_i_send_text('fake_token', '/mis-turnos')
-    then_i_get_text('fake_token', MENSAJE_ERROR_API_PROXIMOS_TURNOS)
-    BotClient.new('fake_token').run_once
-  end
+    it 'muestra un mensaje de error si no hay turnos en el historial' do
+      token = 'fake_token'
+      stub_historial_turnos_vacio
+      when_i_send_text(token, '/historial-turnos')
+      then_i_get_text(token, MENSAJE_NO_HAY_TURNOS_HISTORIAL)
+      BotClient.new(token).run_once
+    end
 
-  it 'muestra un mensaje de error si hay un error al obtener turnos proximos por conexion' do
-    stub_registrado(true)
-    stub_error_conexion(:get, '/turnos/pacientes/proximos/pepe@gmail')
-    when_i_send_text('fake_token', '/mis-turnos')
-    then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
-    BotClient.new('fake_token').run_once
-  end
-
-  it 'muestra un mensaje si no esta registrado al pedir turnos proximos' do
-    stub_registrado(false)
-    when_i_send_text('fake_token', '/mis-turnos')
-    then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
-    BotClient.new('fake_token').run_once
-  end
-
-  it 'muestra un listado del historial de turnos del paciente' do
-    token = 'fake_token'
-    stub_historial_turnos_exitoso
-    when_i_send_text(token, '/historial-turnos')
-    then_i_get_text(token, "Historial de turnos:\nID: 1 - Carlos Sanchez - Clinica - 2023-10-01 10:00 - Ausente\nID: 2 - Maria Perez - Pediatria - 2023-10-02 11:00 - Cancelado")
-    BotClient.new(token).run_once
-  end
-
-  it 'muestra un mensaje de error si no hay turnos en el historial' do
-    token = 'fake_token'
-    stub_historial_turnos_vacio
-    when_i_send_text(token, '/historial-turnos')
-    then_i_get_text(token, MENSAJE_NO_HAY_TURNOS_HISTORIAL)
-    BotClient.new(token).run_once
-  end
-
-  it 'muestra un mensaje si no esta registrado al pedir historial de turnos' do
-    stub_registrado(false)
-    when_i_send_text('fake_token', '/historial-turnos')
-    then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
-    BotClient.new('fake_token').run_once
+    it 'muestra un mensaje si no esta registrado al pedir historial de turnos' do
+      stub_registrado(false)
+      when_i_send_text('fake_token', '/historial-turnos')
+      then_i_get_text('fake_token', MENSAJE_NO_REGISTRADO)
+      BotClient.new('fake_token').run_once
+    end
   end
 
   describe 'Alertas de botones deshabilitados' do

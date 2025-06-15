@@ -87,7 +87,8 @@ class PedirTurnoRoutes
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
     turnero.usuario_registrado?(telegram_id)
 
-    kb = [[Telegram::Bot::Types::InlineKeyboardButton.new(text: 'Por medico', callback_data: 'pedir_turno_medico')]]
+    kb = [[Telegram::Bot::Types::InlineKeyboardButton.new(text: 'Por especialidad', callback_data: 'pedir_turno_especialidad')],
+          [Telegram::Bot::Types::InlineKeyboardButton.new(text: 'Por medico', callback_data: 'pedir_turno_medico')]]
 
     Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
   end
