@@ -314,16 +314,34 @@ describe 'BotClient' do
     stub_edit_message_reply_markup_turno(token)
   end
 
-  def cuando_pido_reservar_turno_por_medico
-    when_i_send_text('fake_token', '/pedir-turno')
-    then_i_get_keyboard_message('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
-    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_medico', opciones_tipo_reserva)
+  def cuando_pido_reservar_turno_por_medico(token)
+    stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+      .with(
+        body: hash_including({
+                               'chat_id' => USER_ID.to_s,
+                               'message_id' => '626'
+                             })
+      )
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    when_i_send_text(token, '/pedir-turno')
+    then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
+    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_medico', opciones_tipo_reserva)
   end
 
-  def cuando_pido_reservar_turno_por_especialidad
-    when_i_send_text('fake_token', '/pedir-turno')
-    then_i_get_keyboard_message('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
-    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_especialidad', opciones_tipo_reserva)
+  def cuando_pido_reservar_turno_por_especialidad(token)
+    stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+      .with(
+        body: hash_including({
+                               'chat_id' => USER_ID.to_s,
+                               'message_id' => '626'
+                             })
+      )
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    when_i_send_text(token, '/pedir-turno')
+    then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
+    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_especialidad', opciones_tipo_reserva)
   end
 
   it 'should get a /version message and respond with current version' do
@@ -375,7 +393,7 @@ describe 'BotClient' do
       stub_registrado(true)
       stub_medicos_disponibles_fallido
 
-      cuando_pido_reservar_turno_por_medico
+      cuando_pido_reservar_turno_por_medico('fake_token')
       then_i_get_text('fake_token', MENSAJE_ERROR_MEDICOS)
 
       run_bot_once('fake_token')
@@ -436,7 +454,7 @@ describe 'BotClient' do
       stub_registrado(true)
       stub_medicos_disponibles_exitoso([])
 
-      cuando_pido_reservar_turno_por_medico
+      cuando_pido_reservar_turno_por_medico('fake_token')
       then_i_get_text('fake_token', MENSAJE_NO_MEDICOS)
 
       run_bot_once('fake_token')
@@ -446,7 +464,7 @@ describe 'BotClient' do
       stub_registrado(true)
       stub_especialidades_disponibles_exitoso([])
 
-      cuando_pido_reservar_turno_por_especialidad
+      cuando_pido_reservar_turno_por_especialidad('fake_token')
       then_i_get_text('fake_token', MENSAJE_NO_ESPECIALIDADES)
 
       run_bot_once('fake_token')
@@ -522,7 +540,7 @@ describe 'BotClient' do
     stub_registrado(true)
     stub_error_conexion(:get, '/turnos/medicos-disponibles')
 
-    cuando_pido_reservar_turno_por_medico
+    cuando_pido_reservar_turno_por_medico('fake_token')
     then_i_get_text('fake_token', MENSAJE_ERROR_GENERAL)
 
     run_bot_once('fake_token')
@@ -698,8 +716,17 @@ describe 'BotClient' do
       stub_edit_message_reply_markup_alert('fake_token')
       stub_answer_callback_query_alert('fake_token')
 
-      when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_ESPECIALIDAD, 'disabled', opciones_tipo_reserva)
+      when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_ESPECIALIDAD, 'disabled', opciones_especialidades)
       then_i_get_callback_alert('fake_token', MENSAJE_ESPECIALIDAD_YA_SELECCIONADA)
+      run_bot_once('fake_token')
+    end
+
+    it 'muestra una alerta cuando se intenta seleccionar un tipo de reserva ya seleccionado (botón disabled)' do
+      stub_edit_message_reply_markup_alert('fake_token')
+      stub_answer_callback_query_alert('fake_token')
+
+      when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, 'disabled', opciones_tipo_reserva)
+      then_i_get_callback_alert('fake_token', MENSAJE_TIPO_DE_RESERVA_YA_SELECCIONADO)
       run_bot_once('fake_token')
     end
   end
