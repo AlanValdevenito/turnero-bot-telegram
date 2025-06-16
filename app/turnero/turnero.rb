@@ -43,6 +43,8 @@ class Turnero
 
   def solicitar_especialidades_disponibles
     resultado = @proveedor_turnero.solicitar_especialidades_disponibles
+    raise NoHayEspecialidadesDisponiblesException if resultado.especialidades.nil? || resultado.especialidades.empty?
+
     resultado.especialidades
   end
 

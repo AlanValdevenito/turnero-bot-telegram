@@ -94,4 +94,10 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:solicitar_especialidades_disponibles).and_return(resultado)
     expect(turnero.solicitar_especialidades_disponibles.first.nombre).to eq(resultado.especialidades.first.nombre)
   end
+
+  it 'deberia devolver error si no hay especialidades disponibles' do
+    resultado = ResultadoEspecialidadesDisponibles.new(exito: true, especialidades: [])
+    allow(proveedor_mock).to receive(:solicitar_especialidades_disponibles).and_return(resultado)
+    expect { turnero.solicitar_especialidades_disponibles }.to raise_error(NoHayEspecialidadesDisponiblesException)
+  end
 end
