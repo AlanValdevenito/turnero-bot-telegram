@@ -16,7 +16,7 @@ class ErroresTurno
   def self.handle_error_seleccionar_especialidad(bot, chat_id)
     yield
   rescue NoHayMedicosDisponiblesException
-    bot.api.send_message(chat_id:, text: MENSAJE_NO_MEDICOS)
+    bot.api.send_message(chat_id:, text: MENSAJE_NO_MEDICOS_ESPECIALIDAD)
   end
 
   def self.handle_error_seleccionar_medico(bot, chat_id)

@@ -480,7 +480,7 @@ describe 'BotClient' do
     it 'deberia recibir un mensaje "Seleccione una especialidad" y responder con un mensaje con que no hay medicos disponibles' do
       token = 'fake_token'
       setup_sin_medicos_por_especialidad_disponibles(token, MENSAJE_SELECCIONE_ESPECIALIDAD, 'Clinica|pepe@gmail', opciones_especialidades)
-      then_i_get_text(token, MENSAJE_NO_MEDICOS)
+      then_i_get_text(token, MENSAJE_NO_MEDICOS_ESPECIALIDAD)
       run_bot_once(token)
     end
   end
