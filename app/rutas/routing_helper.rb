@@ -1,4 +1,5 @@
 require_relative 'pedir_turno_medico'
+require_relative 'pedir_turno_especialidad'
 
 class RoutingHelper
   def self.response_to(routing)
@@ -6,6 +7,8 @@ class RoutingHelper
       case message.data
       when 'pedir_turno_medico'
         PedirTurnoMedicoRoutes.pedir_turno(bot, message)
+      when 'pedir_turno_especialidad'
+        PedirTurnoEspecialidadRoutes.pedir_turno(bot, message)
       end
     end
   end

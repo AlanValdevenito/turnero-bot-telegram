@@ -1,5 +1,6 @@
 require_relative '../medico'
 require_relative '../turno'
+require_relative '../especialidad'
 
 def parsear_turno(turno_hash)
   medico_hash = turno_hash['medico']
@@ -31,6 +32,15 @@ def parsear_medicos(medicos)
           .con_apellido(hash['apellido'])
           .con_matricula(hash['matricula'])
           .con_especialidad(hash['especialidad'])
+  end
+end
+
+def parsear_especialidades(especialidades)
+  return [] if especialidades.nil? || especialidades.empty?
+
+  especialidades.map do |hash|
+    Especialidad.new
+                .con_nombre(hash['nombre'])
   end
 end
 

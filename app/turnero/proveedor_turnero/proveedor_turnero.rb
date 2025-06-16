@@ -8,6 +8,7 @@ require_relative './resultados.rb/resultado_crear_usuario'
 require_relative './resultados.rb/resultado_proximos_turnos'
 require_relative './resultados.rb/resultado_historial_turnos'
 require_relative './resultados.rb/resultado_registrado'
+require_relative './resultados.rb/resultado_especialidades_disponibles'
 require_relative 'proveedor_turnero_helpers'
 # rubocop:disable Metrics/ClassLength
 class ProveedorTurnero
@@ -73,6 +74,17 @@ class ProveedorTurnero
     end
   rescue Faraday::Error
     raise ErrorConexionAPI
+  end
+
+  def solicitar_especialidades_disponibles
+    correlation_id = Thread.current[:cid]
+    response = Faraday.get("#{@api_url}/especialidades", {}, { 'cid' => correlation_id })
+
+    case response.status
+    when 200..299
+      especialidades = parsear_especialidades(JSON.parse(response.body))
+      ResultadoEspecialidadesDisponibles.new(exito: true, especialidades:)
+    end
   end
 
   def solicitar_turnos_disponibles(matricula, _especialidad)

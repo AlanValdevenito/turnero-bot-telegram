@@ -1,8 +1,8 @@
 require 'spec_helper'
 require 'web_mock'
-require_relative '../app/turnero/proveedor_turnero/proveedor_turnero'
-require_relative '../app/turnero/proveedor_turnero/resultados.rb/resultado_reserva'
-require_relative '../app/turnero/proveedor_turnero/resultados.rb/resultado_turnos_disponibles'
+require_relative '../../app/turnero/proveedor_turnero/proveedor_turnero'
+require_relative '../../app/turnero/proveedor_turnero/resultados.rb/resultado_reserva'
+require_relative '../../app/turnero/proveedor_turnero/resultados.rb/resultado_turnos_disponibles'
 
 describe 'ProveedorTurnero' do
   let(:datos_usuario) { { email: 'test@test.com', telegram_id: 1234 } }
@@ -447,6 +447,32 @@ describe 'ProveedorTurnero' do
         .to_return(status: 300, body: { error: '300' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
       expect { proveedor.solicitar_proximos_turnos(datos_usuario[:email]) }.to raise_error(StandardError, /Unexpected status code/)
+    end
+  end
+
+  describe 'Solicitar especialidades disponibles' do
+    def especialidades_disponibles
+      [
+        { 'nombre' => 'Traumatologia', 'duracion_de_turnos' => 10 },
+        { 'nombre' => 'Dermatologia', 'duracion_de_turnos' => 15 }
+      ]
+    end
+
+    def expect_comparar_especialidades(especialidades_resultado, especialidades_esperado)
+      expect(especialidades_resultado.size).to eq(especialidades_esperado.size)
+      especialidades_resultado.zip(especialidades_esperado).each do |especialidad_resultado, especialidad_esperado|
+        expect(especialidad_resultado.nombre).to eq(especialidad_esperado['nombre'])
+      end
+    end
+
+    it 'deberia obtener la lista de especialidades disponibles' do
+      stub_request(:get, "#{api_url}/especialidades").to_return(status: 200, body: especialidades_disponibles.to_json, headers: { 'Content-Type' => 'application/json' })
+
+      resultado = proveedor.solicitar_especialidades_disponibles
+
+      expect(resultado).to be_a(ResultadoEspecialidadesDisponibles)
+      expect(resultado.exito?).to be true
+      expect_comparar_especialidades(resultado.especialidades, especialidades_disponibles)
     end
   end
 end

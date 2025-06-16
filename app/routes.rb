@@ -9,6 +9,7 @@ class Routes
     RegistrarRoutes.register(self)
     PedirTurnoRoutes.register(self)
     PedirTurnoMedicoRoutes.register(self)
+    PedirTurnoEspecialidadRoutes.register(self)
     AyudaRoutes.register(self)
     VersionRoutes.register(self)
     ProximosTurnosRoutes.register(self)

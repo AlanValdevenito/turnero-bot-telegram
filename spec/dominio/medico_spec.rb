@@ -1,4 +1,4 @@
-require_relative '../app/turnero/medico'
+require_relative '../../app/turnero/medico'
 
 RSpec.describe Medico do
   def expect_attributes(medico, nombre, apellido, matricula, especialidad)

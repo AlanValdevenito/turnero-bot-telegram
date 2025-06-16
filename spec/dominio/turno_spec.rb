@@ -1,4 +1,4 @@
-require_relative '../app/turnero/turno'
+require_relative '../../app/turnero/turno'
 
 RSpec.describe Turno do
   def expect_turno_basico(turno, fecha, hora)
