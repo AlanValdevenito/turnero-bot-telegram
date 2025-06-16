@@ -429,7 +429,7 @@ describe 'BotClient' do
       run_bot_once('fake_token')
     end
 
-    xit 'deberia recibir un mensaje "Seleccione el tipo de reserva" y responder con que no hay especialidades disponibles' do
+    it 'deberia recibir un mensaje "Seleccione el tipo de reserva" y responder con que no hay especialidades disponibles' do
       stub_registrado(true)
       stub_especialidades_disponibles_exitoso([])
 

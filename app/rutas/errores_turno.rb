@@ -3,6 +3,8 @@ class ErroresTurno
     yield
   rescue UsuarioNoRegistradoException
     bot.api.send_message(chat_id:, text: MENSAJE_NO_REGISTRADO)
+  rescue NoHayEspecialidadesDisponiblesException
+    bot.api.send_message(chat_id:, text: MENSAJE_NO_ESPECIALIDADES)
   rescue NoHayMedicosDisponiblesException
     bot.api.send_message(chat_id:, text: MENSAJE_NO_MEDICOS)
   rescue ErrorAPIMedicosDisponiblesException
