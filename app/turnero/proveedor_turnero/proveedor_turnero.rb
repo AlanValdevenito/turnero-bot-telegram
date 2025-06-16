@@ -97,6 +97,9 @@ class ProveedorTurnero
     when 200..299
       medicos = parsear_medicos(JSON.parse(respuesta.body))
       ResultadoMedicosDisponibles.new(exito: true, medicos:)
+    when 400..499
+      error = JSON.parse(respuesta.body)['error']
+      ResultadoMedicosDisponibles.new(exito: false, error:)
     end
   rescue Faraday::Error
     raise ErrorConexionAPI

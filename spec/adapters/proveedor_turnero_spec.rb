@@ -510,14 +510,13 @@ describe 'ProveedorTurnero' do
       end
     end
 
-    it 'deberia devolver una lista vacia si no hay medicos disponibles de la especialidad elegida' do
+    it 'deberia devolver un resultado con error si no hay medicos disponibles de la especialidad elegida' do
       stub_request(:get, "#{api_url}/turnos/medicos-disponibles/Traumatologia")
-        .to_return(status: 200, body: [].to_json, headers: { 'Content-Type' => 'application/json' })
+        .to_return(status: 404, body: { error: 'Especialidad sin medicos dados de alta' }.to_json, headers: { 'Content-Type' => 'application/json' })
 
       resultado = proveedor.solicitar_medicos_por_especialidad_disponibles('Traumatologia')
-
-      expect(resultado.exito?).to be true
-      expect(resultado.medicos).to eq([])
+      expect(resultado.exito?).to be false
+      expect(resultado.error).to eq('Especialidad sin medicos dados de alta')
     end
 
     it 'deberia obtener la lista de medicos por especialidad disponibles' do
