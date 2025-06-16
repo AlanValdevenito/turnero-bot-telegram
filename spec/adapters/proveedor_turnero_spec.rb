@@ -491,6 +491,25 @@ describe 'ProveedorTurnero' do
       ]
     end
 
+    def expect_comparar_medicos(medicos_resultado, medicos_esperado)
+      expect_comparar_matricula_medicos(medicos_resultado, medicos_esperado)
+      expect_comparar_especialidad_medicos(medicos_resultado, medicos_esperado)
+    end
+
+    def expect_comparar_matricula_medicos(medicos_resultado, medicos_esperado)
+      expect(medicos_resultado.size).to eq(medicos_esperado.size)
+      medicos_resultado.zip(medicos_esperado).each do |medico_resultado, medico_esperado|
+        expect(medico_resultado.matricula).to eq(medico_esperado['matricula'])
+      end
+    end
+
+    def expect_comparar_especialidad_medicos(medicos_resultado, medicos_esperado)
+      expect(medicos_resultado.size).to eq(medicos_esperado.size)
+      medicos_resultado.zip(medicos_esperado).each do |medico_resultado, medico_esperado|
+        expect(medico_resultado.especialidad).to eq(medico_esperado['especialidad'])
+      end
+    end
+
     it 'deberia devolver una lista vacia si no hay medicos disponibles de la especialidad elegida' do
       stub_request(:get, "#{api_url}/turnos/medicos-disponibles/Traumatologia")
         .to_return(status: 200, body: [].to_json, headers: { 'Content-Type' => 'application/json' })
@@ -499,6 +518,16 @@ describe 'ProveedorTurnero' do
 
       expect(resultado.exito?).to be true
       expect(resultado.medicos).to eq([])
+    end
+
+    it 'deberia obtener la lista de medicos por especialidad disponibles' do
+      stub_request(:get, "#{api_url}/turnos/medicos-disponibles/Traumatologia").to_return(status: 200, body: medicos_por_especialidad_disponibles.to_json, headers: { 'Content-Type' => 'application/json' })
+
+      resultado = proveedor.solicitar_medicos_por_especialidad_disponibles('Traumatologia')
+
+      expect(resultado).to be_a(ResultadoMedicosDisponibles)
+      expect(resultado.exito?).to be true
+      expect_comparar_medicos(resultado.medicos, medicos_por_especialidad_disponibles)
     end
   end
 end
