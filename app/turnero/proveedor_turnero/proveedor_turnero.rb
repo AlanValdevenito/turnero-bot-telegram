@@ -98,6 +98,8 @@ class ProveedorTurnero
       medicos = parsear_medicos(JSON.parse(respuesta.body))
       ResultadoMedicosDisponibles.new(exito: true, medicos:)
     end
+  rescue Faraday::Error
+    raise ErrorConexionAPI
   end
 
   def solicitar_turnos_disponibles(matricula, _especialidad)

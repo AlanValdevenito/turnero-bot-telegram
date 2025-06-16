@@ -529,5 +529,12 @@ describe 'ProveedorTurnero' do
       expect(resultado.exito?).to be true
       expect_comparar_medicos(resultado.medicos, medicos_por_especialidad_disponibles)
     end
+
+    it 'deberia manejar errores de conexión al solicitar medicos por especialidad disponibles' do
+      stub_request(:get, "#{api_url}/turnos/medicos-disponibles/Traumatologia")
+        .to_raise(Faraday::Error.new('Error de conexión'))
+
+      expect { proveedor.solicitar_medicos_por_especialidad_disponibles('Traumatologia') }.to raise_error(ErrorConexionAPI)
+    end
   end
 end
