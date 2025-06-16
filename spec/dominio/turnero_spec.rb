@@ -107,4 +107,10 @@ describe 'Turnero' do
     medicos = turnero.solicitar_medicos_por_especialidad_disponibles('Traumatologia')
     expect(medicos.first.matricula).to eq(resultado.medicos.first.matricula)
   end
+
+  it 'deberia devolver error si no hay medicos por especialidad disponibles' do
+    resultado = ResultadoMedicosDisponibles.new(exito: true, medicos: [])
+    allow(proveedor_mock).to receive(:solicitar_medicos_por_especialidad_disponibles).and_return(resultado)
+    expect { turnero.solicitar_medicos_por_especialidad_disponibles('Traumatologia') }.to raise_error(NoHayMedicosDisponiblesException)
+  end
 end
