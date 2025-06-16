@@ -48,6 +48,11 @@ class Turnero
     resultado.especialidades
   end
 
+  def solicitar_medicos_por_especialidad_disponibles(especialidad)
+    resultado = @proveedor_turnero.solicitar_medicos_por_especialidad_disponibles(especialidad)
+    resultado.medicos
+  end
+
   def solicitar_turnos_disponibles(matricula, especialidad)
     resultado = @proveedor_turnero.solicitar_turnos_disponibles(matricula, especialidad)
 

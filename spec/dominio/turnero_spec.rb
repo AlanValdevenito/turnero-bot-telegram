@@ -100,4 +100,11 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:solicitar_especialidades_disponibles).and_return(resultado)
     expect { turnero.solicitar_especialidades_disponibles }.to raise_error(NoHayEspecialidadesDisponiblesException)
   end
+
+  it 'deberia obtener la lista de medicos por especialidad disponibles' do
+    resultado = ResultadoMedicosDisponibles.new(exito: true, medicos: [Medico.new.con_nombre('Juan').con_apellido('Perez').con_matricula('ABC123').con_especialidad('Traumatologia')])
+    allow(proveedor_mock).to receive(:solicitar_medicos_por_especialidad_disponibles).and_return(resultado)
+    medicos = turnero.solicitar_medicos_por_especialidad_disponibles('Traumatologia')
+    expect(medicos.first.matricula).to eq(resultado.medicos.first.matricula)
+  end
 end
