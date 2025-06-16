@@ -474,5 +474,12 @@ describe 'ProveedorTurnero' do
       expect(resultado.exito?).to be true
       expect_comparar_especialidades(resultado.especialidades, especialidades_disponibles)
     end
+
+    it 'deberia manejar errores de conexión al solicitar especialidades disponibles' do
+      stub_request(:get, "#{api_url}/especialidades")
+        .to_raise(Faraday::Error.new('Error de conexión'))
+
+      expect { proveedor.solicitar_especialidades_disponibles }.to raise_error(ErrorConexionAPI)
+    end
   end
 end

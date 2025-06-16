@@ -85,6 +85,8 @@ class ProveedorTurnero
       especialidades = parsear_especialidades(JSON.parse(response.body))
       ResultadoEspecialidadesDisponibles.new(exito: true, especialidades:)
     end
+  rescue Faraday::Error
+    raise ErrorConexionAPI
   end
 
   def solicitar_turnos_disponibles(matricula, _especialidad)
