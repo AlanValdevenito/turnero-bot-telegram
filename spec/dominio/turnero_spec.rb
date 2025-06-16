@@ -88,4 +88,10 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:solicitar_historial_turnos).and_return(resultado)
     expect(turnero.historial_turnos_paciente(email)).to eq(turnos)
   end
+
+  it 'deberia obtener la lista de especialidades disponibles' do
+    resultado = ResultadoEspecialidadesDisponibles.new(exito: true, especialidades: [Especialidad.new.con_nombre('Traumatologia')])
+    allow(proveedor_mock).to receive(:solicitar_especialidades_disponibles).and_return(resultado)
+    expect(turnero.solicitar_especialidades_disponibles.first.nombre).to eq(resultado.especialidades.first.nombre)
+  end
 end
