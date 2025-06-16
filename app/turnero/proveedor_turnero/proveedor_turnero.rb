@@ -89,6 +89,11 @@ class ProveedorTurnero
     raise ErrorConexionAPI
   end
 
+  def solicitar_medicos_por_especialidad_disponibles(_especialidad)
+    medicos = []
+    ResultadoMedicosDisponibles.new(exito: true, medicos:)
+  end
+
   def solicitar_turnos_disponibles(matricula, _especialidad)
     correlation_id = Thread.current[:cid]
     response = Faraday.get("#{@api_url}/turnos/#{matricula}/disponibilidad", {}, { 'cid' => correlation_id })
