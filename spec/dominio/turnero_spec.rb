@@ -89,6 +89,12 @@ describe 'Turnero' do
     expect(turnero.historial_turnos_paciente(email)).to eq(turnos)
   end
 
+  it 'da error si hay penalización por reputación al reservar turno' do
+    resultado = ResultadoReserva.new(exito: false, error: 'Penalización por porcentaje de asistencia')
+    allow(proveedor_mock).to receive(:reservar_turno).and_return(resultado)
+    expect { turnero.reservar_turno('12345', 'fecha', 'hora', email) }.to raise_error(PenalizacionPorReputacionException)
+  end
+
   it 'deberia obtener la lista de especialidades disponibles' do
     resultado = ResultadoEspecialidadesDisponibles.new(exito: true, especialidades: [Especialidad.new.con_nombre('Traumatologia')])
     allow(proveedor_mock).to receive(:solicitar_especialidades_disponibles).and_return(resultado)
@@ -109,7 +115,7 @@ describe 'Turnero' do
   end
 
   it 'deberia devolver error si no hay medicos por especialidad disponibles' do
-    resultado = ResultadoMedicosDisponibles.new(exito: true, medicos: [])
+    resultado = ResultadoMedicosDisponibles.new(exito: false, error: 'Especialidad sin medicos dados de alta')
     allow(proveedor_mock).to receive(:solicitar_medicos_por_especialidad_disponibles).and_return(resultado)
     expect { turnero.solicitar_medicos_por_especialidad_disponibles('Traumatologia') }.to raise_error(NoHayMedicosDisponiblesException)
   end

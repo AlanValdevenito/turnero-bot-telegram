@@ -50,7 +50,7 @@ class Turnero
 
   def solicitar_medicos_por_especialidad_disponibles(especialidad)
     resultado = @proveedor_turnero.solicitar_medicos_por_especialidad_disponibles(especialidad)
-    raise NoHayMedicosDisponiblesException if resultado.medicos.nil? || resultado.medicos.empty?
+    raise NoHayMedicosDisponiblesException if !resultado.exito? || resultado.medicos.nil? || resultado.medicos.empty?
 
     resultado.medicos
   end
