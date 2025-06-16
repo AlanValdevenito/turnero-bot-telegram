@@ -281,6 +281,19 @@ describe 'BotClient' do
     when_i_send_keyboard_updates(token, mensaje, seleccion, opciones)
   end
 
+  def setup_sin_medicos_por_especialidad_disponibles(token, mensaje, seleccion, opciones)
+    stub_medicos_por_especialidad_disponibles_fallido('Clinica')
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    stub_request(:post, "https://api.telegram.org/bot#{token}/answerCallbackQuery")
+      .with(body: hash_including({ 'callback_query_id' => '608740940475689651' }))
+      .to_return(status: 200, body: { "ok": true }.to_json, headers: {})
+
+    when_i_send_keyboard_updates(token, mensaje, seleccion, opciones)
+  end
+
   def then_keyboard_is_updated(token, callback_query_id = '608740940475689651')
     stub_request(:post, "https://api.telegram.org/bot#{token}/editMessageReplyMarkup")
       .with(
@@ -443,6 +456,13 @@ describe 'BotClient' do
       token = 'fake_token'
       setup_sin_turnos_disponibles(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos)
       then_i_get_text(token, MENSAJE_NO_TURNOS)
+      run_bot_once(token)
+    end
+
+    xit 'deberia recibir un mensaje "Seleccione una especialidad" y responder con un mensaje con que no hay medicos disponibles' do
+      token = 'fake_token'
+      setup_sin_medicos_por_especialidad_disponibles(token, MENSAJE_SELECCIONE_ESPECIALIDAD, 'Clinica|pepe@gmail', opciones_especialidades)
+      then_i_get_text(token, MENSAJE_NO_MEDICOS)
       run_bot_once(token)
     end
   end
