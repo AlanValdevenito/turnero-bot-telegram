@@ -307,6 +307,12 @@ describe 'BotClient' do
     when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_medico', opciones_tipo_reserva)
   end
 
+  def cuando_pido_reservar_turno_por_especialidad
+    when_i_send_text('fake_token', '/pedir-turno')
+    then_i_get_keyboard_message('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
+    when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_especialidad', opciones_tipo_reserva)
+  end
+
   it 'should get a /version message and respond with current version' do
     stub_api
     when_i_send_text('fake_token', '/version')
@@ -419,6 +425,16 @@ describe 'BotClient' do
 
       cuando_pido_reservar_turno_por_medico
       then_i_get_text('fake_token', MENSAJE_NO_MEDICOS)
+
+      run_bot_once('fake_token')
+    end
+
+    xit 'deberia recibir un mensaje "Seleccione el tipo de reserva" y responder con que no hay especialidades disponibles' do
+      stub_registrado(true)
+      stub_especialidades_disponibles_exitoso([])
+
+      cuando_pido_reservar_turno_por_especialidad
+      then_i_get_text('fake_token', MENSAJE_NO_ESPECIALIDADES)
 
       run_bot_once('fake_token')
     end

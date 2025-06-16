@@ -30,6 +30,11 @@ def stub_paciente_ya_registrado(email, telegram_id)
     ).to_return(status: 400, body: { error: 'El paciente ya se encuentra registrado' }.to_json)
 end
 
+def stub_especialidades_disponibles_exitoso(especialidades)
+  stub_request(:get, "#{ENV['API_URL']}/especialidades")
+    .to_return(status: 200, body: especialidades.to_json, headers: { 'Content-Type' => 'application/json' })
+end
+
 def stub_medicos_disponibles_exitoso(medicos)
   stub_request(:get, "#{ENV['API_URL']}/turnos/medicos-disponibles")
     .to_return(status: 200, body: medicos.to_json, headers: { 'Content-Type' => 'application/json' })
