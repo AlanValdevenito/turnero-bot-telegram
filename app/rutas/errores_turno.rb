@@ -13,6 +13,12 @@ class ErroresTurno
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
   end
 
+  def self.handle_error_seleccionar_especialidad(bot, chat_id)
+    yield
+  rescue NoHayMedicosDisponiblesException
+    bot.api.send_message(chat_id:, text: MENSAJE_NO_MEDICOS)
+  end
+
   def self.handle_error_seleccionar_medico(bot, chat_id)
     yield
   rescue NohayTurnosDisponiblesException

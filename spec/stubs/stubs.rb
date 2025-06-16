@@ -52,7 +52,7 @@ end
 
 def stub_medicos_por_especialidad_disponibles_fallido(especialidad)
   stub_request(:get, "#{ENV['API_URL']}/turnos/medicos-disponibles/#{especialidad}")
-    .to_return(status: 404, body: 'Especialidad sin medicos dados de alta'.to_json, headers: { 'Content-Type' => 'application/json' })
+    .to_return(status: 404, body: { error: 'Especialidad sin medicos dados de alta' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
 def stub_turnos_disponibles_exitoso(turnos, matricula = '123')

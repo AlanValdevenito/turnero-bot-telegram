@@ -34,7 +34,9 @@ class PedirTurnoEspecialidadRoutes
 
   def self.seleccionar_especialidad_on_response(routing)
     routing.on_response_to MENSAJE_SELECCIONE_ESPECIALIDAD do |bot, message|
-      procesar_seleccion_especialidad(bot, message)
+      ErroresTurno.handle_error_seleccionar_especialidad(bot, message.message.chat.id) do
+        procesar_seleccion_especialidad(bot, message)
+      end
     end
   end
 
