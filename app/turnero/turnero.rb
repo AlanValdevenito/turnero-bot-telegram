@@ -67,6 +67,8 @@ class Turnero
         raise TurnoYaExisteException
       when /médico no encontrado/i
         raise MedicoNoEncontradoException
+      when /penalización por porcentaje de asistencia/i
+        raise PenalizacionPorReputacionException
       else
         raise ErrorAPIReservarTurnoException, resultado.error
       end

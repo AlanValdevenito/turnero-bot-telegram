@@ -88,4 +88,10 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:solicitar_historial_turnos).and_return(resultado)
     expect(turnero.historial_turnos_paciente(email)).to eq(turnos)
   end
+
+  it 'da error si hay penalización por reputación al reservar turno' do
+    resultado = ResultadoReserva.new(exito: false, error: 'Penalización por porcentaje de asistencia')
+    allow(proveedor_mock).to receive(:reservar_turno).and_return(resultado)
+    expect { turnero.reservar_turno('12345', 'fecha', 'hora', email) }.to raise_error(PenalizacionPorReputacionException)
+  end
 end

@@ -1,0 +1,2 @@
+class PenalizacionPorReputacionException < StandardError
+end
