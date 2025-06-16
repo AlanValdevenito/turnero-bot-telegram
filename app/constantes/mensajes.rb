@@ -25,7 +25,8 @@ MENSAJE_AYUDA = <<~TEXT.freeze
   /mis-turnos - Muestra tus próximos turnos
   /historial-turnos - Muestra tu historial de turnos
 TEXT
-MENSAJE_MEDICO_YA_SELECCIONADO = 'Ya seleccionaste un médico, para agendar un nuevo turno envía el mensaje : /pedir-turno'.freeze
-MENSAJE_TURNO_YA_SELECCIONADO = 'Ya seleccionaste un turno, para seleccionar un nuevo médico envía el mensaje : /pedir-turno'.freeze
+MENSAJE_MEDICO_YA_SELECCIONADO = 'Ya seleccionaste un médico, para agendar un nuevo turno envía el mensaje: /pedir-turno'.freeze
+MENSAJE_TURNO_YA_SELECCIONADO = 'Ya seleccionaste un turno, para seleccionar un nuevo médico envía el mensaje: /pedir-turno'.freeze
 TURNO_CANCELADO = '¡Uh! turno cancelado, esperamos que estes bien'.freeze
 MENSAJE_PENALIZACION = 'No puede reservar turnos por el momento debido a una penalización por bajo porcentaje de asistencia'.freeze
+MENSAJE_ESPECIALIDAD_YA_SELECCIONADA = 'Ya seleccionaste una especialidad, para agendar un nuevo turno envía el mensaje: /pedir-turno'.freeze

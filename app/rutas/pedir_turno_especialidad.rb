@@ -34,14 +34,26 @@ class PedirTurnoEspecialidadRoutes
 
   def self.seleccionar_especialidad_on_response(routing)
     routing.on_response_to MENSAJE_SELECCIONE_ESPECIALIDAD do |bot, message|
+      if message.data == DESHABILITAR
+        responder_especialidad_deshabilitada(bot, message)
+        next
+      end
+
       ErroresTurno.handle_error_seleccionar_especialidad(bot, message.message.chat.id) do
         procesar_seleccion_especialidad(bot, message)
       end
     end
   end
 
+  def self.responder_especialidad_deshabilitada(bot, message)
+    bot.api.answer_callback_query(callback_query_id: message.id, text: MENSAJE_ESPECIALIDAD_YA_SELECCIONADA)
+  rescue StandardError
+    bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_ERROR_GENERAL)
+  end
+
   def self.procesar_seleccion_especialidad(bot, message)
     especialidad, email = message.data.split('|')
+    TecladoDeshabilitado.disable_keyboard_buttons(bot, message, message.data)
     responder_callback_especialidad(bot, message)
 
     markup = medicos_por_especialidad_disponibles(especialidad, email)

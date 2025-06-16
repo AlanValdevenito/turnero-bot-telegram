@@ -693,5 +693,14 @@ describe 'BotClient' do
       then_i_get_callback_alert('fake_token', MENSAJE_TURNO_YA_SELECCIONADO)
       run_bot_once('fake_token')
     end
+
+    it 'muestra una alerta cuando se intenta seleccionar una especialidad ya seleccionada (botón disabled)' do
+      stub_edit_message_reply_markup_alert('fake_token')
+      stub_answer_callback_query_alert('fake_token')
+
+      when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_ESPECIALIDAD, 'disabled', opciones_tipo_reserva)
+      then_i_get_callback_alert('fake_token', MENSAJE_ESPECIALIDAD_YA_SELECCIONADA)
+      run_bot_once('fake_token')
+    end
   end
 end
