@@ -167,7 +167,7 @@ class ProveedorTurnero
     end
   end
 
-  def cancelar_turno(id, email, confirmacion = false)
+  def cancelar_turno(id, email, confirmacion)
     correlation_id = Thread.current[:cid]
     body = { email:, confirmacion: }
     response = Faraday.put("#{@api_url}/turnos/#{id}/cancelacion", body.to_json, { 'cid' => correlation_id })
