@@ -177,6 +177,13 @@ describe 'BotClient' do
     ]
   end
 
+  def opciones_confirmacion
+    [
+      { text: 'Si', callback_data: 'true|pepe@gmail' },
+      { text: 'No', callback_data: 'false|pepe@gmail' }
+    ]
+  end
+
   def medicos_por_especialidad_disponibles
     [
       { 'nombre' => 'Carlos', 'apellido' => 'Sanchez', 'matricula' => '123', 'especialidad' => 'Clinica' },
@@ -492,6 +499,14 @@ describe 'BotClient' do
       when_i_send_text('fake_token', '/cancelar-turno 1')
       then_i_get_text('fake_token', MENSAJE_TURNO_CANCELADO)
 
+      run_bot_once('fake_token')
+    end
+
+    xit 'deberia recibir un mensaje /cancelar-turno y responde con un inline keyboard' do
+      stub_registrado(true)
+      stub_cancelar_turno_sin_anticipacion(1, 'pepe@gmail', false)
+      when_i_send_text('fake_token', '/cancelar-turno 1')
+      then_i_get_keyboard_message('fake_token', MENSAJE_CONFIRMAR_CANCELACION_TURNO, opciones_confirmacion)
       run_bot_once('fake_token')
     end
   end
