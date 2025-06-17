@@ -10,3 +10,4 @@ services:
         LOG_LEVEL: "${LOG_LEVEL}"
         LOG_URL: "${LOG_URL}"
         API_URL: "${API_URL}"
+        API_KEY: "${API_KEY}"
