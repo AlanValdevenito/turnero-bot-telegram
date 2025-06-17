@@ -222,6 +222,14 @@ describe 'BotClient' do
     setup_y_espera_inline_keyboard_turnos(token, MENSAJE_SELECCIONE_MEDICO, '123|Clinica|pepe@gmail', opciones_medicos, opciones_turnos)
   end
 
+  def setup_cancelacion_sin_anticipacion(token, mensaje, seleccion, opciones)
+    stub_cancelar_turno_sin_anticipacion(1, 'pepe@gmail', false)
+
+    when_i_send_text(token, '/cancelar-turno 1')
+    then_i_get_keyboard_message(token, mensaje, opciones)
+    when_i_send_keyboard_updates(token, mensaje, seleccion, opciones)
+  end
+
   def setup_turnos_fallidos(token, mensaje, seleccion, opciones)
     stub_turnos_disponibles_fallido
 
@@ -507,6 +515,15 @@ describe 'BotClient' do
       stub_cancelar_turno_sin_anticipacion(1, 'pepe@gmail', false)
       when_i_send_text('fake_token', '/cancelar-turno 1')
       then_i_get_keyboard_message('fake_token', MENSAJE_CONFIRMAR_CANCELACION_TURNO, opciones_confirmacion)
+      run_bot_once('fake_token')
+    end
+
+    xit 'deberia recibir un mensaje inline keyboard y turno con estado ausente' do
+      stub_registrado(true)
+
+      setup_cancelacion_sin_anticipacion('fake_token', MENSAJE_CONFIRMAR_CANCELACION_TURNO, 'true|pepe@gmail', opciones_confirmacion)
+      then_i_get_text('fake_token', MENSAJE_TURNO_AUSENTE)
+
       run_bot_once('fake_token')
     end
   end

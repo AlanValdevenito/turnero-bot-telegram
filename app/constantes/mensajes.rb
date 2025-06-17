@@ -33,3 +33,4 @@ MENSAJE_PENALIZACION = 'Usted se encuentra penalizado, tendrá que esperar para 
 MENSAJE_ESPECIALIDAD_YA_SELECCIONADA = 'Ya seleccionaste una especialidad, para agendar un nuevo turno envía el mensaje: /pedir-turno'.freeze
 MENSAJE_TIPO_DE_RESERVA_YA_SELECCIONADO = 'Ya seleccionaste un tipo de reserva, para agendar un nuevo turno envía el mensaje: /pedir-turno'.freeze
 MENSAJE_CONFIRMAR_CANCELACION_TURNO = 'Si cancelas el turno se te contará como ausente, ¿estás seguro que quieres cancelarlo?'.freeze
+MENSAJE_TURNO_AUSENTE = 'Tu turno ha sido marcado como ausente por cancelarlo con poca anticipacion'.freeze
