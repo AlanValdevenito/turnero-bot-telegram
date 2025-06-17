@@ -116,6 +116,7 @@ class Turnero
   end
 
   def cancelar_turno(id, email, confirmacion)
-    @proveedor_turnero.cancelar_turno(id, email, confirmacion)
+    resultado = @proveedor_turnero.cancelar_turno(id, email, confirmacion)
+    raise CancelacionNecesitaConfirmacionException unless resultado.exito?
   end
 end

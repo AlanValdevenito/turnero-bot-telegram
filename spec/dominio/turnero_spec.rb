@@ -119,4 +119,10 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:solicitar_medicos_por_especialidad_disponibles).and_return(resultado)
     expect { turnero.solicitar_medicos_por_especialidad_disponibles('Traumatologia') }.to raise_error(NoHayMedicosDisponiblesException)
   end
+
+  it 'deberia devolver error si se intenta cancelar un turno con menos de 24hs de anticipacion' do
+    resultado = ResultadoCancelarTurno.new(exito: false, error: 'Necesitas confirmacion para cancelar el turno')
+    allow(proveedor_mock).to receive(:cancelar_turno).and_return(resultado)
+    expect { turnero.cancelar_turno(1, 'pepe@mail.com', false) }.to raise_error(CancelacionNecesitaConfirmacionException)
+  end
 end

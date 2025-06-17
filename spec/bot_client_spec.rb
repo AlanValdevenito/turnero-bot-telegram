@@ -502,7 +502,7 @@ describe 'BotClient' do
       run_bot_once('fake_token')
     end
 
-    xit 'deberia recibir un mensaje /cancelar-turno y responde con un inline keyboard' do
+    it 'deberia recibir un mensaje /cancelar-turno y responde con un inline keyboard' do
       stub_registrado(true)
       stub_cancelar_turno_sin_anticipacion(1, 'pepe@gmail', false)
       when_i_send_text('fake_token', '/cancelar-turno 1')
