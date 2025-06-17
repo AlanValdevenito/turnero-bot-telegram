@@ -13,19 +13,18 @@ require_relative './resultados.rb/resultado_cancelar_turno'
 require_relative 'proveedor_turnero_helpers'
 # rubocop:disable Metrics/ClassLength
 class ProveedorTurnero
-  def initialize(api_url)
+  def initialize(api_url, api_key)
     @api_url = api_url
+    @api_key = api_key
   end
 
   def version
-    correlation_id = Thread.current[:cid]
-    response = Faraday.get("#{@api_url}/version", {}, { 'cid' => correlation_id })
+    response = Faraday.get("#{@api_url}/version", {}, crear_header)
     JSON.parse(response.body)['version']
   end
 
   def usuario_registrado?(telegram_id)
-    correlation_id = Thread.current[:cid]
-    response = Faraday.get("#{@api_url}/usuarios/telegram/#{telegram_id}", {}, { 'cid' => correlation_id })
+    response = Faraday.get("#{@api_url}/usuarios/telegram/#{telegram_id}", {}, crear_header)
     case response.status
     when 200..299
       email = JSON.parse(response.body)['email']
@@ -41,10 +40,8 @@ class ProveedorTurnero
   end
 
   def crear_usuario(email, telegram_id)
-    correlation_id = Thread.current[:cid]
     body = { email:, telegram_id: }.to_json
-    headers = { 'Content-Type' => 'application/json', 'cid' => correlation_id }
-    response = Faraday.post("#{@api_url}/usuarios", body, headers)
+    response = Faraday.post("#{@api_url}/usuarios", body, crear_header)
 
     case response.status
     when 200..299
@@ -62,8 +59,7 @@ class ProveedorTurnero
   end
 
   def solicitar_medicos_disponibles
-    correlation_id = Thread.current[:cid]
-    response = Faraday.get("#{@api_url}/turnos/medicos-disponibles", {}, { 'cid' => correlation_id })
+    response = Faraday.get("#{@api_url}/turnos/medicos-disponibles", {}, crear_header)
     case response.status
     when 200..299
       medicos = parsear_medicos(JSON.parse(response.body))
@@ -78,8 +74,7 @@ class ProveedorTurnero
   end
 
   def solicitar_especialidades_disponibles
-    correlation_id = Thread.current[:cid]
-    response = Faraday.get("#{@api_url}/especialidades", {}, { 'cid' => correlation_id })
+    response = Faraday.get("#{@api_url}/especialidades", {}, crear_header)
 
     case response.status
     when 200..299
@@ -91,8 +86,7 @@ class ProveedorTurnero
   end
 
   def solicitar_medicos_por_especialidad_disponibles(especialidad)
-    correlation_id = Thread.current[:cid]
-    respuesta = Faraday.get("#{@api_url}/turnos/medicos-disponibles/#{especialidad}", {}, { 'cid' => correlation_id })
+    respuesta = Faraday.get("#{@api_url}/turnos/medicos-disponibles/#{especialidad}", {}, crear_header)
 
     case respuesta.status
     when 200..299
@@ -107,8 +101,7 @@ class ProveedorTurnero
   end
 
   def solicitar_turnos_disponibles(matricula, _especialidad)
-    correlation_id = Thread.current[:cid]
-    response = Faraday.get("#{@api_url}/turnos/#{matricula}/disponibilidad", {}, { 'cid' => correlation_id })
+    response = Faraday.get("#{@api_url}/turnos/#{matricula}/disponibilidad", {}, crear_header)
     case response.status
     when 200..299
       turnos_disponibles = parsear_turnos(JSON.parse(response.body))
@@ -126,18 +119,15 @@ class ProveedorTurnero
   end
 
   def reservar_turno(matricula, fecha, hora, email)
-    correlation_id = Thread.current[:cid]
     body = { matricula:, fecha:, hora:, email: }.to_json
-    headers = { 'Content-Type' => 'application/json', 'cid' => correlation_id }
-    response = Faraday.post("#{@api_url}/turnos", body, headers)
+    response = Faraday.post("#{@api_url}/turnos", body, crear_header)
     manejar_respuesta_reserva(response)
   rescue Faraday::Error
     raise ErrorConexionAPI
   end
 
   def solicitar_proximos_turnos(email)
-    correlation_id = Thread.current[:cid]
-    response = Faraday.get("#{@api_url}/turnos/pacientes/proximos/#{email}", {}, { 'cid' => correlation_id })
+    response = Faraday.get("#{@api_url}/turnos/pacientes/proximos/#{email}", {}, crear_header)
     case response.status
     when 200..299
       turnos = parsear_proximos_turnos(JSON.parse(response.body))
@@ -155,8 +145,7 @@ class ProveedorTurnero
   end
 
   def solicitar_historial_turnos(email)
-    correlation_id = Thread.current[:cid]
-    response = Faraday.get("#{@api_url}/turnos/pacientes/historial/#{email}", {}, { 'cid' => correlation_id })
+    response = Faraday.get("#{@api_url}/turnos/pacientes/historial/#{email}", {}, crear_header)
     case response.status
     when 200..299
       turnos = parsear_historial_turnos(JSON.parse(response.body))
@@ -168,9 +157,8 @@ class ProveedorTurnero
   end
 
   def cancelar_turno(id, email, confirmacion)
-    correlation_id = Thread.current[:cid]
     body = { email:, confirmacion: }
-    response = Faraday.put("#{@api_url}/turnos/#{id}/cancelacion", body.to_json, { 'cid' => correlation_id })
+    response = Faraday.put("#{@api_url}/turnos/#{id}/cancelacion", body.to_json, crear_header)
     case response.status
     when 200..299
       ResultadoCancelarTurno.new(exito: true)
@@ -180,6 +168,12 @@ class ProveedorTurnero
   end
 
   private
+
+  def crear_header
+    correlation_id = Thread.current[:cid]
+    header = { 'Content-Type' => 'application/json', 'cid' => correlation_id, 'X_API_KEY' => @api_key }
+    header
+  end
 
   def manejar_respuesta_reserva(response)
     case response.status

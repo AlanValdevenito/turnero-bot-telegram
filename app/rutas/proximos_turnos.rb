@@ -17,7 +17,7 @@ class ProximosTurnosRoutes
   end
 
   def self.procesar_mis_turnos(bot, message)
-    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
     email = turnero.usuario_registrado?(message.from.id)
     turnos = turnero.proximos_turnos_paciente(email)
     turnos_mensaje = formatear_turnos_proximos(turnos)

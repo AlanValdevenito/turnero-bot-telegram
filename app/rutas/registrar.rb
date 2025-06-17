@@ -15,7 +15,7 @@ class RegistrarRoutes
 
   def self.registrar_paciente(bot, message, args)
     email = args['email']
-    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
     turnero.registrar_paciente(email, message.from.id)
     bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_REGISTRO_EXITOSO)
   end

@@ -26,7 +26,7 @@ class PedirTurnoRoutes
   end
 
   def self.pedir_turno(telegram_id)
-    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
     turnero.usuario_registrado?(telegram_id)
 
     kb = [[Telegram::Bot::Types::InlineKeyboardButton.new(text: 'Por especialidad', callback_data: 'pedir_turno_especialidad')],
@@ -65,7 +65,7 @@ class PedirTurnoRoutes
   end
 
   def self.reservar_turno(matricula, fecha, hora, email)
-    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
     turno = turnero.reservar_turno(matricula, fecha, hora, email)
     format(MENSAJE_TURNO_CONFIRMADO, fecha: turno.fecha, hora: turno.hora, medico: "#{turno.medico.nombre} #{turno.medico.apellido}", especialidad: turno.medico.especialidad)
   end
