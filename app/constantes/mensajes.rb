@@ -28,7 +28,7 @@ MENSAJE_AYUDA = <<~TEXT.freeze
 TEXT
 MENSAJE_MEDICO_YA_SELECCIONADO = 'Ya seleccionaste un médico, para agendar un nuevo turno envía el mensaje: /pedir-turno'.freeze
 MENSAJE_TURNO_YA_SELECCIONADO = 'Ya seleccionaste un turno, para seleccionar un nuevo médico envía el mensaje: /pedir-turno'.freeze
-TURNO_CANCELADO = '¡Uh! turno cancelado, esperamos que estes bien'.freeze
+MENSAJE_TURNO_CANCELADO = '¡Uh! turno cancelado, esperamos que estes bien'.freeze
 MENSAJE_PENALIZACION = 'Usted se encuentra penalizado, tendrá que esperar para sacar un nuevo turno'.freeze
 MENSAJE_ESPECIALIDAD_YA_SELECCIONADA = 'Ya seleccionaste una especialidad, para agendar un nuevo turno envía el mensaje: /pedir-turno'.freeze
 MENSAJE_TIPO_DE_RESERVA_YA_SELECCIONADO = 'Ya seleccionaste un tipo de reserva, para agendar un nuevo turno envía el mensaje: /pedir-turno'.freeze

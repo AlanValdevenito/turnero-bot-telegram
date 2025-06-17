@@ -14,6 +14,7 @@ class Routes
     VersionRoutes.register(self)
     ProximosTurnosRoutes.register(self)
     HistorialTurnosRoutes.register(self)
+    CancelarTurnoRoutes.register(self)
     register_general_commands
   end
 

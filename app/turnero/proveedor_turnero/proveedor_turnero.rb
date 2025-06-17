@@ -9,6 +9,7 @@ require_relative './resultados.rb/resultado_proximos_turnos'
 require_relative './resultados.rb/resultado_historial_turnos'
 require_relative './resultados.rb/resultado_registrado'
 require_relative './resultados.rb/resultado_especialidades_disponibles'
+require_relative './resultados.rb/resultado_cancelar_turno'
 require_relative 'proveedor_turnero_helpers'
 # rubocop:disable Metrics/ClassLength
 class ProveedorTurnero
@@ -163,6 +164,16 @@ class ProveedorTurnero
     when 400..499
       error = JSON.parse(response.body)['error']
       ResultadoHistorialTurnos.new(exito: false, error:)
+    end
+  end
+
+  def cancelar_turno(id, email, confirmacion = false)
+    correlation_id = Thread.current[:cid]
+    body = { email:, confirmacion: }
+    response = Faraday.put("#{@api_url}/turnos/#{id}/cancelacion", body.to_json, { 'cid' => correlation_id })
+    case response.status
+    when 200..299
+      ResultadoCancelarTurno.new(exito: true)
     end
   end
 

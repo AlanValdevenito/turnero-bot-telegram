@@ -536,4 +536,15 @@ describe 'ProveedorTurnero' do
       expect { proveedor.solicitar_medicos_por_especialidad_disponibles('Traumatologia') }.to raise_error(ErrorConexionAPI)
     end
   end
+
+  describe 'Cancelar turno' do
+    it 'deberia devolver un resultado exitoso si se cancela un turno con mas de 24 horas de anticipacion' do
+      stub_request(:put, "#{api_url}/turnos/1/cancelacion").
+        with(body: { email: 'prueba@gmail.com', confirmacion: false }.to_json).
+        to_return(status: 200, body: "", headers: {})
+
+      resultado = proveedor.cancelar_turno(1, 'prueba@gmail.com', false)
+      expect(resultado.exito?).to be true
+    end
+  end
 end
