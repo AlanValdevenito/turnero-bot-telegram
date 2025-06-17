@@ -4,8 +4,6 @@ require_relative '../app/constantes/mensajes'
 require_relative 'stubs/stubs'
 
 require "#{File.dirname(__FILE__)}/../app/bot_client"
-
-ENV['API_URL'] ||= 'http://web:3000'
 USER_ID = 141_733_544
 
 def run_bot_once(token)

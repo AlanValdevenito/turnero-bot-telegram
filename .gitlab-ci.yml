@@ -4,6 +4,7 @@ services:
 
 variables:
   TEAM: negro
+  API_URL: http://negro-api-web-1:3000
 
 stages:
   - build
