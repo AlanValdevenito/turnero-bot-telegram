@@ -85,6 +85,8 @@ class Turnero
         raise PenalizacionPorReputacionException
       when /ya existe un turno reservado/i
         raise SuperposicionDeTurnosException
+      when /usuario ha alcanzado el límite de turnos/i
+        raise LimiteDeTurnosException
       else
         raise ErrorAPIReservarTurnoException, resultado.error
       end

@@ -41,5 +41,7 @@ class ErroresTurno
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
   rescue PenalizacionPorReputacionException
     bot.api.send_message(chat_id:, text: MENSAJE_PENALIZACION)
+  rescue LimiteDeTurnosException
+    bot.api.send_message(chat_id:, text: MENSAJE_LIMITE_TURNOS)
   end
 end
