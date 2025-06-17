@@ -278,6 +278,11 @@ describe 'BotClient' do
     stub_edit_message_reply_markup_turno(token)
   end
 
+  def setup_turno_superpuesto(token)
+    stub_flujo_turno_superpuesto(turnos_disponibles)
+    stub_edit_message_reply_markup_turno(token)
+  end
+
   def setup_reserva_turno_penalizado(token)
     stub_flujo_turno_penalizacion(turnos_disponibles)
     stub_edit_message_reply_markup_turno(token)
@@ -760,6 +765,16 @@ describe 'BotClient' do
       when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, 'disabled', opciones_tipo_reserva)
       then_i_get_callback_alert('fake_token', MENSAJE_TIPO_DE_RESERVA_YA_SELECCIONADO)
       run_bot_once('fake_token')
+    end
+  end
+
+  describe 'Superposicion de turnos' do
+    xit 'muestra un mensaje de error si se intenta reservar un turno que se superpone con otro ya reservado' do
+      token = 'fake_token'
+      setup_turno_superpuesto(token)
+      when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
+      then_i_get_text(token, MENSAJE_ERROR_TURNO_CON_SUPERPOSICION)
+      run_bot_once(token)
     end
   end
 end
