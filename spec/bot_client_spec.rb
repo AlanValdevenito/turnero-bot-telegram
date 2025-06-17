@@ -769,7 +769,7 @@ describe 'BotClient' do
   end
 
   describe 'Superposicion de turnos' do
-    xit 'muestra un mensaje de error si se intenta reservar un turno que se superpone con otro ya reservado' do
+    it 'muestra un mensaje de error si se intenta reservar un turno que se superpone con otro ya reservado' do
       token = 'fake_token'
       setup_turno_superpuesto(token)
       when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
