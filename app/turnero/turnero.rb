@@ -114,4 +114,8 @@ class Turnero
     end
     resultado.turnos
   end
+
+  def cancelar_turno(id, email, confirmacion)
+    @proveedor_turnero.cancelar_turno(id, email, confirmacion)
+  end
 end

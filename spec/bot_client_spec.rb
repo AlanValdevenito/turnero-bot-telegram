@@ -486,11 +486,11 @@ describe 'BotClient' do
   end
 
   describe 'cancelacion de turno' do
-    xit 'deberia recibir un mensaje /cancelar-turno y responde turno con estado cancelado' do
+    it 'deberia recibir un mensaje /cancelar-turno y responde turno con estado cancelado' do
       stub_registrado(true)
-
+      stub_cancelar_turno_exitoso(1, 'pepe@gmail', false)
       when_i_send_text('fake_token', '/cancelar-turno 1')
-      then_i_get_text('fake_token', TURNO_CANCELADO)
+      then_i_get_text('fake_token', MENSAJE_TURNO_CANCELADO)
 
       run_bot_once('fake_token')
     end
