@@ -546,5 +546,14 @@ describe 'ProveedorTurnero' do
       resultado = proveedor.cancelar_turno(1, 'prueba@gmail.com', false)
       expect(resultado.exito?).to be true
     end
+
+    it 'deberia devolver un resultado fallido si se cancela un turno con menos de 24 horas de anticipacion' do
+      stub_request(:put, "#{api_url}/turnos/1/cancelacion")
+        .with(body: { email: 'prueba@gmail.com', confirmacion: false }.to_json)
+        .to_return(status: 409, body: 'Necesitas confirmacion para cancelar este turno', headers: {})
+
+      resultado = proveedor.cancelar_turno(1, 'prueba@gmail.com', false)
+      expect(resultado.exito?).to be false
+    end
   end
 end

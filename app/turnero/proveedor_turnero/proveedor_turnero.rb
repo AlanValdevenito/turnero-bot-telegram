@@ -174,6 +174,8 @@ class ProveedorTurnero
     case response.status
     when 200..299
       ResultadoCancelarTurno.new(exito: true)
+    when 409
+      ResultadoCancelarTurno.new(exito: false)
     end
   end
 
