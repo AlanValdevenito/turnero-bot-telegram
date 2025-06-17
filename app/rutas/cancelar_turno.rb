@@ -9,6 +9,7 @@ class CancelarTurnoRoutes
 
   def self.cancelar_turno_on_message(routing)
     routing.on_message_pattern %r{/cancelar-turno (?<id>.*)} do |bot, message, args|
+      bot.logger.debug("/cancelar-turno: #{args}")
       procesar_cancelar_turno(bot, message, args['id'])
     end
   end

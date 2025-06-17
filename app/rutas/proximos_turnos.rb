@@ -10,6 +10,7 @@ class ProximosTurnosRoutes
   def self.mis_turnos_on_message(routing)
     routing.on_message '/mis-turnos' do |bot, message|
       handle_error_proximos_turnos(bot, message.chat.id) do
+        bot.logger.debug('/mis-turnos')
         procesar_mis_turnos(bot, message)
       end
     end

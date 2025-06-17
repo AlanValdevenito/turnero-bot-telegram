@@ -10,6 +10,7 @@ class HistorialTurnosRoutes
   def self.historial_turnos_on_message(routing)
     routing.on_message '/historial-turnos' do |bot, message|
       handle_error_proximos_turnos(bot, message.chat.id) do
+        bot.logger.debug('/historial-turnos')
         procesar_historial_turnos(bot, message)
       end
     end
