@@ -33,6 +33,8 @@ class ErroresTurno
     yield
   rescue TurnoYaExisteException
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_TURNO_EXISTENTE)
+  rescue SuperposicionDeTurnosException
+    bot.api.send_message(chat_id:, text: MENSAJE_ERROR_TURNO_CON_SUPERPOSICION)
   rescue ErrorAPIReservarTurnoException
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_RESERVA)
   rescue ErrorConexionAPI

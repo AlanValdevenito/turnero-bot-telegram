@@ -77,12 +77,14 @@ class Turnero
 
     unless resultado.exito?
       case resultado.error
-      when /ya existe un turno/i
+      when /ya existe un turno para ese médico/i
         raise TurnoYaExisteException
       when /médico no encontrado/i
         raise MedicoNoEncontradoException
       when /penalización por porcentaje de asistencia/i
         raise PenalizacionPorReputacionException
+      when /ya existe un turno reservado/i
+        raise SuperposicionDeTurnosException
       else
         raise ErrorAPIReservarTurnoException, resultado.error
       end

@@ -125,4 +125,10 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:cancelar_turno).and_return(resultado)
     expect { turnero.cancelar_turno(1, 'pepe@mail.com', false) }.to raise_error(CancelacionNecesitaConfirmacionException)
   end
+
+  it 'deberia devolver error si se intenta reservar un turno que se superpone con otro ya reservado' do
+    resultado = ResultadoReserva.new(exito: false, error: 'Ya existe un turno reservado en esa fecha y horario')
+    allow(proveedor_mock).to receive(:reservar_turno).and_return(resultado)
+    expect { turnero.reservar_turno('12345', '2025-06-10', '10:00', email) }.to raise_error(SuperposicionDeTurnosException)
+  end
 end
