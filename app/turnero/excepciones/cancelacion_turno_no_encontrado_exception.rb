@@ -1,0 +1,2 @@
+class NoPodesCancelarTurnoInexistente < StandardError
+end
