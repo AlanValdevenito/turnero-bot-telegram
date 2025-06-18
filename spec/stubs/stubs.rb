@@ -93,8 +93,16 @@ end
 
 def stub_cancelar_turno_sin_anticipacion(id, email_stub, confirmacion)
   stub_request(:put, "#{ENV['API_URL']}/turnos/#{id}/cancelacion")
-    .with(body: { email: email_stub, confirmacion: }.to_json)
-    .to_return(status: 409, body: 'Necesitas confirmacion para cancelar este turno', headers: {})
+    .with(
+      body: { "{\"email\":\"#{email_stub}\",\"confirmacion\":#{confirmacion}}" => nil },
+      headers: {
+        'Accept' => '*/*',
+        'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+        'Content-Type' => 'application/x-www-form-urlencoded',
+        'User-Agent' => 'Faraday v2.7.4'
+      }
+    )
+    .to_return(status: confirmacion ? 200 : 409, body: '', headers: {})
 end
 
 def stub_reservar_turno_fallido

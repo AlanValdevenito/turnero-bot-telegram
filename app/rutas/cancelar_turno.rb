@@ -5,6 +5,7 @@ require_relative '../turnero/proveedor_turnero/proveedor_turnero'
 class CancelarTurnoRoutes
   def self.register(routing)
     cancelar_turno_on_message(routing)
+    seleccionar_confirmacion_on_response(routing)
   end
 
   def self.cancelar_turno_on_message(routing)
@@ -17,17 +18,17 @@ class CancelarTurnoRoutes
   def self.procesar_cancelar_turno(bot, message, id)
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
     email = turnero.usuario_registrado?(message.from.id)
-    handle_error_cancelacion(bot, message.chat.id, email) do
+    handle_error_cancelacion(bot, message.chat.id, id, email) do
       turnero.cancelar_turno(id, email, false)
       bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_TURNO_CANCELADO)
     end
   end
 
-  def self.handle_error_cancelacion(bot, chat_id, email)
+  def self.handle_error_cancelacion(bot, chat_id, turno_id, email)
     yield
   rescue CancelacionNecesitaConfirmacionException
-    kb = [[Telegram::Bot::Types::InlineKeyboardButton.new(text: 'Si', callback_data: "true|#{email}")],
-          [Telegram::Bot::Types::InlineKeyboardButton.new(text: 'No', callback_data: "false|#{email}")]]
+    kb = [[Telegram::Bot::Types::InlineKeyboardButton.new(text: 'Si', callback_data: "true|#{turno_id}|#{email}")],
+          [Telegram::Bot::Types::InlineKeyboardButton.new(text: 'No', callback_data: "false|#{turno_id}|#{email}")]]
 
     markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
 
@@ -35,5 +36,14 @@ class CancelarTurnoRoutes
   rescue StandardError => e
     puts "Error completo: #{e.message}"
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
+  end
+
+  def self.seleccionar_confirmacion_on_response(routing)
+    routing.on_response_to MENSAJE_CONFIRMAR_CANCELACION_TURNO do |bot, message|
+      _confirmacion, turno_id, email = message.data.split('|')
+      turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+      turnero.cancelar_turno(turno_id, email, true)
+      bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_TURNO_AUSENTE)
+    end
   end
 end
