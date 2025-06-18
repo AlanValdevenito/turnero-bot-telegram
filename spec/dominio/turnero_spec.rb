@@ -1,6 +1,7 @@
 require 'spec_helper'
 require_relative '../../app/turnero/turnero'
 require_relative '../../app/turnero/excepciones/limite_turnos_exception'
+require_relative '../../app/turnero/proveedor_turnero/resultados/index'
 
 describe 'Turnero' do
   let(:proveedor_mock) { instance_double('ProveedorTurnero') }

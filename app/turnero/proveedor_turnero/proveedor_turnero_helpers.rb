@@ -72,20 +72,7 @@ def build_turno_proximo(hash)
   construir_turno(hash['id'], fecha, hora, medico, hash['estado'])
 end
 
-def crear_header
+def crear_header(api_key)
   correlation_id = Thread.current[:cid]
-  { 'Content-Type' => 'application/json', 'cid' => correlation_id, 'X-API-KEY' => @api_key }
-end
-
-def manejar_respuesta_reserva(response)
-  case response.status
-  when 200..299
-    ResultadoReserva.new(exito: true, turno: parsear_turno(JSON.parse(response.body)))
-  when 400..499
-    ResultadoReserva.new(exito: false, error: JSON.parse(response.body)['error'])
-  when 500..599
-    raise ErrorAPIReservarTurnoException
-  else
-    raise StandardError, "Unexpected status code: #{response.status}"
-  end
+  { 'Content-Type' => 'application/json', 'cid' => correlation_id, 'X-API-KEY' => api_key }
 end
