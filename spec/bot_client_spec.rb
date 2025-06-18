@@ -540,9 +540,9 @@ describe 'BotClient' do
       run_bot_once('fake_token')
     end
 
-    xit 'deberia recibir un mensaje /cancelar-turno y responde que no podes cancelar el turno' do
+    it 'deberia recibir un mensaje /cancelar-turno y responde que no podes cancelar el turno' do
       stub_registrado(true)
-      stub_cancelar_turno_exitoso(1, 'pepe@gmail', false)
+      stub_cancelar_turno_error(1, 'pepe@gmail', false)
       when_i_send_text('fake_token', '/cancelar-turno 1')
       then_i_get_text('fake_token', MENSAJE_NO_PODES_CANCELAR_ESTE_TURNO)
 

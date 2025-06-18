@@ -559,7 +559,7 @@ describe 'ProveedorTurnero' do
     it 'deberia devolver un mensaje de que no se puede cancelar turno si el turno no se encuentra/no me pertenece' do
       stub_request(:put, "#{api_url}/turnos/1/cancelacion")
         .with(body: { email: 'prueba@gmail.com', confirmacion: false }.to_json)
-        .to_return(status: 403, body: { mensaje: 'No podes cancelar este turno' }.to_json, headers: {})
+        .to_return(status: 403, body: { mensaje: 'No puedes cancelar este turno' }.to_json, headers: {})
 
       resultado = proveedor.cancelar_turno(1, 'prueba@gmail.com', false)
       expect(resultado.exito?).to be false

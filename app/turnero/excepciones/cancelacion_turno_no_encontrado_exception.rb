@@ -1,2 +1,2 @@
-class NoPodesCancelarTurnoInexistente < StandardError
+class NoPodesCancelarTurnoInexistenteException < StandardError
 end

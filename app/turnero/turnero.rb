@@ -114,7 +114,7 @@ class Turnero
     unless resultado.exito?
       case resultado.error
       when /Necesitas confirmacion para cancelar este turno/i then raise CancelacionNecesitaConfirmacionException
-      when /No podes cancelar este turno/i then raise NoPodesCancelarTurnoInexistente
+      when /No puedes cancelar este turno/i then raise NoPodesCancelarTurnoInexistenteException
       end
     end
   end

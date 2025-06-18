@@ -37,4 +37,4 @@ MENSAJE_TURNO_AUSENTE = 'Tu turno ha sido marcado como ausente por cancelarlo co
 MENSAJE_ERROR_TURNO_CON_SUPERPOSICION = '¡Ey! ya tiene un turno en este horario'.freeze
 MENSAJE_LIMITE_TURNOS = 'Oops! Ya tienes demasiados turnos con esta especialidad'.freeze
 MENSAJE_RECHAZAR_CANCELACION_TURNO = '¡Excelente! Tu turno no fue cancelado, esperamos que asistas'.freeze
-MENSAJE_NO_PODES_CANCELAR_ESTE_TURNO = 'No podes cancelar este turno'.freeze
+MENSAJE_NO_PODES_CANCELAR_ESTE_TURNO = 'No puedes cancelar este turno'.freeze

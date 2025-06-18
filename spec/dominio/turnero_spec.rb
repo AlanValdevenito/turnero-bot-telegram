@@ -122,9 +122,9 @@ describe 'Turnero' do
   end
 
   it 'deberia devolver error si se intenta cancelar un turno que no existe o no te pertenece' do
-    resultado = ResultadoCancelarTurno.new(exito: false, error: 'No podes cancelar este turno')
+    resultado = ResultadoCancelarTurno.new(exito: false, error: 'No puedes cancelar este turno')
     allow(proveedor_mock).to receive(:cancelar_turno).and_return(resultado)
-    expect { turnero.cancelar_turno(1, 'pepe@mail.com', false) }.to raise_error(NoPodesCancelarTurnoInexistente)
+    expect { turnero.cancelar_turno(1, 'pepe@mail.com', false) }.to raise_error(NoPodesCancelarTurnoInexistenteException)
   end
 
   it 'deberia devolver error si se intenta reservar un turno que se superpone con otro ya reservado' do

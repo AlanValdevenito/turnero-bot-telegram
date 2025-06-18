@@ -11,13 +11,17 @@ class CancelarTurnoRoutes
   def self.cancelar_turno_on_message(routing)
     routing.on_message_pattern %r{/cancelar-turno (?<id>.*)} do |bot, message, args|
       bot.logger.debug("/cancelar-turno: #{args}")
-      procesar_cancelar_turno(bot, message, args['id'])
+      begin
+        turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
+        email = turnero.usuario_registrado?(message.from.id)
+        procesar_cancelar_turno(bot, message, args['id'], email, turnero)
+      rescue UsuarioNoRegistradoException
+        bot.api.send_message(chat_id: message.from.id, text: MENSAJE_NO_REGISTRADO)
+      end
     end
   end
 
-  def self.procesar_cancelar_turno(bot, message, id)
-    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
-    email = turnero.usuario_registrado?(message.from.id)
+  def self.procesar_cancelar_turno(bot, message, id, email, turnero)
     handle_error_cancelacion(bot, message.chat.id, id, email) do
       turnero.cancelar_turno(id, email, false)
       bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_TURNO_CANCELADO)
@@ -33,6 +37,8 @@ class CancelarTurnoRoutes
     markup = Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: kb)
 
     bot.api.send_message(chat_id:, text: MENSAJE_CONFIRMAR_CANCELACION_TURNO, reply_markup: markup)
+  rescue NoPodesCancelarTurnoInexistenteException
+    bot.api.send_message(chat_id:, text: MENSAJE_NO_PODES_CANCELAR_ESTE_TURNO)
   rescue StandardError => e
     puts "Error completo: #{e.message}"
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
