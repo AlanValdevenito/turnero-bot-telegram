@@ -1,16 +1,7 @@
 require 'json'
 require_relative '../excepciones/errores_api'
 require_relative '../excepciones/errores_conexion'
-require_relative './resultados.rb/resultado_reserva'
-require_relative './resultados.rb/resultado_turnos_disponibles'
-require_relative './resultados.rb/resultado_medicos_disponibles'
-require_relative './resultados.rb/resultado_crear_usuario'
-require_relative './resultados.rb/resultado_proximos_turnos'
-require_relative './resultados.rb/resultado_historial_turnos'
-require_relative './resultados.rb/resultado_registrado'
-require_relative './resultados.rb/resultado_especialidades_disponibles'
-require_relative './resultados.rb/resultado_cancelar_turno'
-require_relative './resultados.rb/resultado_penalizacion'
+require_relative 'resultados/index'
 require_relative 'proveedor_turnero_helpers'
 # rubocop:disable Metrics/ClassLength
 class ProveedorTurnero
@@ -184,26 +175,6 @@ class ProveedorTurnero
     when 409
       error = JSON.parse(response.body)['mensaje']
       ResultadoCancelarTurno.new(exito: false, error:)
-    end
-  end
-
-  private
-
-  def crear_header
-    correlation_id = Thread.current[:cid]
-    { 'Content-Type' => 'application/json', 'cid' => correlation_id, 'X-API-KEY' => @api_key }
-  end
-
-  def manejar_respuesta_reserva(response)
-    case response.status
-    when 200..299
-      ResultadoReserva.new(exito: true, turno: parsear_turno(JSON.parse(response.body)))
-    when 400..499
-      ResultadoReserva.new(exito: false, error: JSON.parse(response.body)['error'])
-    when 500..599
-      raise ErrorAPIReservarTurnoException
-    else
-      raise StandardError, "Unexpected status code: #{response.status}"
     end
   end
 end
