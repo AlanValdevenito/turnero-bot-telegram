@@ -187,7 +187,7 @@ class ProveedorTurnero
 
   def crear_header
     correlation_id = Thread.current[:cid]
-    { 'Content-Type' => 'application/json', 'cid' => correlation_id, 'X_API_KEY' => @api_key }
+    { 'Content-Type' => 'application/json', 'cid' => correlation_id, 'X-API-KEY' => @api_key }
   end
 
   def manejar_respuesta_reserva(response)
