@@ -1,0 +1,2 @@
+class PacienteYaRegistradoException < StandardError
+end

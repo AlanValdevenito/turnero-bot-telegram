@@ -1,0 +1,7 @@
+require_relative 'ayuda'
+require_relative 'pedir_turno'
+require_relative 'registrar'
+require_relative 'version'
+require_relative 'proximos_turnos'
+require_relative 'historial_turnos'
+require_relative 'cancelar_turno'

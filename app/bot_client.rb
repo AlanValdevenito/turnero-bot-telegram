@@ -25,7 +25,13 @@ class BotClient
     @logger.info "username is #{@username}"
     @logger.info "token is #{@token}"
     run_client do |bot|
-      bot.listen { |message| handle_message(message, bot) }
+      bot.listen do |update|
+        correlation_id = construir_cid(update)
+        Thread.current[:cid] = correlation_id
+        SemanticLogger.tagged(correlation_id) do
+          handle_message(update, bot)
+        end
+      end
     rescue StandardError => e
       @logger.fatal e.message
     end
@@ -43,9 +49,18 @@ class BotClient
     Telegram::Bot::Client.run(@token, logger: @logger) { |bot| block.call bot }
   end
 
-  def handle_message(message, bot)
-    @logger.debug "From: @#{message.from.username}, message: #{message.inspect}"
+  def handle_message(update, bot)
+    @logger.debug "From: @#{update.from.username}, message: #{update.inspect}"
 
-    Routes.new.handle(bot, message)
+    Routes.new.handle(bot, update)
+  end
+
+  def construir_cid(update)
+    case update
+    when Telegram::Bot::Types::Message
+      "cid:#{update.chat.id}-#{update.message_id}"
+    when Telegram::Bot::Types::CallbackQuery
+      "cid:#{update.from.id}-callback-#{update.id}"
+    end
   end
 end

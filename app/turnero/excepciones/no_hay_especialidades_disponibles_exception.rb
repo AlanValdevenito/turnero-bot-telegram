@@ -1,0 +1,2 @@
+class NoHayEspecialidadesDisponiblesException < StandardError
+end

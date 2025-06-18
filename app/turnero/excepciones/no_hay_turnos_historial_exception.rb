@@ -1,0 +1,2 @@
+class NoHayTurnosEnHistorialException < StandardError
+end
