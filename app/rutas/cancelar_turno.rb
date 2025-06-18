@@ -10,12 +10,13 @@ class CancelarTurnoRoutes
 
   def self.cancelar_turno_on_message(routing)
     routing.on_message_pattern %r{/cancelar-turno (?<id>.*)} do |bot, message, args|
+      bot.logger.debug("/cancelar-turno: #{args}")
       procesar_cancelar_turno(bot, message, args['id'])
     end
   end
 
   def self.procesar_cancelar_turno(bot, message, id)
-    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
     email = turnero.usuario_registrado?(message.from.id)
     handle_error_cancelacion(bot, message.chat.id, id, email) do
       turnero.cancelar_turno(id, email, false)

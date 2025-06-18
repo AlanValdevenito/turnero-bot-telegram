@@ -6,8 +6,8 @@ require_relative '../../app/turnero/proveedor_turnero/resultados.rb/resultado_tu
 
 describe 'ProveedorTurnero' do
   let(:datos_usuario) { { email: 'test@test.com', telegram_id: 1234 } }
-  let(:api_url) { 'http://web:3000' }
-  let(:proveedor) { ProveedorTurnero.new(api_url) }
+  let(:api_url) { ENV['API_URL'] }
+  let(:proveedor) { ProveedorTurnero.new(api_url, ENV['API_KEY']) }
   let(:medicos_disponibles) do
     [
       { 'nombre' => 'Carlos', 'apellido' => 'Sanchez', 'matricula' => '123', 'especialidad' => 'Clínica' },

@@ -1,4 +1,6 @@
 require 'simplecov'
+require 'dotenv'
+Dotenv.load
 SimpleCov.start do
   root(File.join(File.dirname(__FILE__), '..'))
   coverage_dir 'reports/coverage'

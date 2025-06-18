@@ -9,13 +9,14 @@ class RoutingHelper
         next
       end
 
-      case message.data
-      when 'pedir_turno_medico'
+      tipo, email = message.data.split('|')
+      case tipo
+      when 'm'
         TecladoDeshabilitado.disable_keyboard_buttons(bot, message, message.data)
-        PedirTurnoMedicoRoutes.pedir_turno(bot, message)
-      when 'pedir_turno_especialidad'
+        PedirTurnoMedicoRoutes.pedir_turno(bot, message, email)
+      when 'e'
         TecladoDeshabilitado.disable_keyboard_buttons(bot, message, message.data)
-        PedirTurnoEspecialidadRoutes.pedir_turno(bot, message)
+        PedirTurnoEspecialidadRoutes.pedir_turno(bot, message, email)
       end
     end
   end

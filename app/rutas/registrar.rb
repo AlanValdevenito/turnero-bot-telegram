@@ -7,12 +7,17 @@ class RegistrarRoutes
   def self.register(routing)
     routing.on_message_pattern %r{/registrar (?<email>.*)} do |bot, message, args|
       handle_error_registrar(bot, message.chat.id) do
-        email = args['email']
-        turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
-        turnero.registrar_paciente(email, message.from.id)
-        bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_REGISTRO_EXITOSO)
+        bot.logger.debug("/registrar: #{args}")
+        registrar_paciente(bot, message, args)
       end
     end
+  end
+
+  def self.registrar_paciente(bot, message, args)
+    email = args['email']
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
+    turnero.registrar_paciente(email, message.from.id)
+    bot.api.send_message(chat_id: message.chat.id, text: MENSAJE_REGISTRO_EXITOSO)
   end
 
   def self.handle_error_registrar(bot, chat_id)

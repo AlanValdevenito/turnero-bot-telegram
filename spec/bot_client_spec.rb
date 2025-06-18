@@ -4,8 +4,6 @@ require_relative '../app/constantes/mensajes'
 require_relative 'stubs/stubs'
 
 require "#{File.dirname(__FILE__)}/../app/bot_client"
-
-ENV['API_URL'] ||= 'http://web:3000'
 USER_ID = 141_733_544
 
 def run_bot_once(token)
@@ -165,8 +163,8 @@ describe 'BotClient' do
 
   let(:opciones_tipo_reserva) do
     [
-      { text: 'Por especialidad', callback_data: 'pedir_turno_especialidad' },
-      { text: 'Por medico', callback_data: 'pedir_turno_medico' }
+      { text: 'Por especialidad', callback_data: 'e|pepe@gmail' },
+      { text: 'Por medico', callback_data: 'm|pepe@gmail' }
     ]
   end
 
@@ -278,6 +276,11 @@ describe 'BotClient' do
     stub_edit_message_reply_markup_turno(token)
   end
 
+  def setup_turno_superpuesto(token)
+    stub_flujo_turno_superpuesto(turnos_disponibles)
+    stub_edit_message_reply_markup_turno(token)
+  end
+
   def setup_reserva_turno_penalizado(token)
     stub_flujo_turno_penalizacion(turnos_disponibles)
     stub_edit_message_reply_markup_turno(token)
@@ -341,7 +344,7 @@ describe 'BotClient' do
 
     when_i_send_text(token, '/pedir-turno')
     then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_medico', opciones_tipo_reserva)
+    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TIPO_RESERVA, 'm|pepe@gmail', opciones_tipo_reserva)
   end
 
   def cuando_pido_reservar_turno_por_especialidad(token)
@@ -356,7 +359,7 @@ describe 'BotClient' do
 
     when_i_send_text(token, '/pedir-turno')
     then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_especialidad', opciones_tipo_reserva)
+    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TIPO_RESERVA, 'e|pepe@gmail', opciones_tipo_reserva)
   end
 
   it 'should get a /version message and respond with current version' do
@@ -760,6 +763,16 @@ describe 'BotClient' do
       when_i_send_keyboard_updates('fake_token', MENSAJE_SELECCIONE_TIPO_RESERVA, 'disabled', opciones_tipo_reserva)
       then_i_get_callback_alert('fake_token', MENSAJE_TIPO_DE_RESERVA_YA_SELECCIONADO)
       run_bot_once('fake_token')
+    end
+  end
+
+  describe 'Superposicion de turnos' do
+    it 'muestra un mensaje de error si se intenta reservar un turno que se superpone con otro ya reservado' do
+      token = 'fake_token'
+      setup_turno_superpuesto(token)
+      when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TURNO, '2023-10-01|10:00|123|Clinica|pepe@gmail', opciones_turnos)
+      then_i_get_text(token, MENSAJE_ERROR_TURNO_CON_SUPERPOSICION)
+      run_bot_once(token)
     end
   end
 end

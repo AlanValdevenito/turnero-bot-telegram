@@ -10,13 +10,14 @@ class ProximosTurnosRoutes
   def self.mis_turnos_on_message(routing)
     routing.on_message '/mis-turnos' do |bot, message|
       handle_error_proximos_turnos(bot, message.chat.id) do
+        bot.logger.debug('/mis-turnos')
         procesar_mis_turnos(bot, message)
       end
     end
   end
 
   def self.procesar_mis_turnos(bot, message)
-    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
     email = turnero.usuario_registrado?(message.from.id)
     turnos = turnero.proximos_turnos_paciente(email)
     turnos_mensaje = formatear_turnos_proximos(turnos)

@@ -13,10 +13,9 @@ class PedirTurnoEspecialidadRoutes
     seleccionar_especialidad_on_response(routing)
   end
 
-  def self.pedir_turno(bot, message)
+  def self.pedir_turno(bot, message, email)
     ErroresTurno.handle_error_pedir_turno(bot, message.from.id) do
-      turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
-      email = turnero.usuario_registrado?(message.from.id)
+      turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
       especialidades = turnero.solicitar_especialidades_disponibles
 
       bot.api.send_message(chat_id: message.from.id, text: MENSAJE_SELECCIONE_ESPECIALIDAD, reply_markup: crear_markup(especialidades, email))
@@ -68,7 +67,7 @@ class PedirTurnoEspecialidadRoutes
   end
 
   def self.medicos_por_especialidad_disponibles(especialidad, email)
-    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL']))
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
     medicos = turnero.solicitar_medicos_por_especialidad_disponibles(especialidad)
 
     kb = medicos.map do |m|
