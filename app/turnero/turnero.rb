@@ -26,12 +26,9 @@ class Turnero
 
     unless resultado.exito?
       case resultado.error
-      when /ya está en uso/i
-        raise EmailYaEnUsoException
-      when /paciente.*registrado/i
-        raise PacienteYaRegistradoException
-      else
-        raise ErrorAPICrearUsuarioException, resultado.error
+      when /ya está en uso/i then raise EmailYaEnUsoException
+      when /paciente.*registrado/i then raise PacienteYaRegistradoException
+      else raise ErrorAPICrearUsuarioException, resultado.error
       end
     end
   end
@@ -65,12 +62,9 @@ class Turnero
 
     unless resultado.exito?
       case resultado.error
-      when /no hay turnos/i
-        raise NohayTurnosDisponiblesException
-      when /médico no encontrado/i
-        raise MedicoNoEncontradoException
-      else
-        raise ErrorAPITurnosDisponiblesException, resultado.error
+      when /no hay turnos/i then raise NohayTurnosDisponiblesException
+      when /médico no encontrado/i then raise MedicoNoEncontradoException
+      else raise ErrorAPITurnosDisponiblesException, resultado.error
       end
     end
 
@@ -82,16 +76,11 @@ class Turnero
 
     unless resultado.exito?
       case resultado.error
-      when /ya existe un turno para ese médico/i
-        raise TurnoYaExisteException
-      when /médico no encontrado/i
-        raise MedicoNoEncontradoException
-      when /ya existe un turno reservado/i
-        raise SuperposicionDeTurnosException
-      when /usuario ha alcanzado el límite de turnos/i
-        raise LimiteDeTurnosException
-      else
-        raise ErrorAPIReservarTurnoException, resultado.error
+      when /ya existe un turno para ese médico/i then raise TurnoYaExisteException
+      when /médico no encontrado/i then raise MedicoNoEncontradoException
+      when /ya existe un turno reservado/i then raise SuperposicionDeTurnosException
+      when /usuario ha alcanzado el límite de turnos/i then raise LimiteDeTurnosException
+      else raise ErrorAPIReservarTurnoException, resultado.error
       end
     end
 
@@ -103,8 +92,7 @@ class Turnero
 
     unless resultado.exito?
       case resultado.error
-      when /El paciente no tiene/i
-        raise NoHayProximosTurnosException
+      when /El paciente no tiene/i then raise NoHayProximosTurnosException
       end
     end
 
@@ -115,8 +103,7 @@ class Turnero
     resultado = @proveedor_turnero.solicitar_historial_turnos(email)
     unless resultado.exito?
       case resultado.error
-      when /El paciente no tiene turnos en su historial/i
-        raise NoHayTurnosEnHistorialException
+      when /El paciente no tiene turnos en su historial/i then raise NoHayTurnosEnHistorialException
       end
     end
     resultado.turnos
@@ -124,6 +111,10 @@ class Turnero
 
   def cancelar_turno(id, email, confirmacion)
     resultado = @proveedor_turnero.cancelar_turno(id, email, confirmacion)
-    raise CancelacionNecesitaConfirmacionException unless resultado.exito?
+    unless resultado.exito?
+      case resultado.error
+      when /Necesitas confirmacion para cancelar este turno/i then raise CancelacionNecesitaConfirmacionException
+      end
+    end
   end
 end

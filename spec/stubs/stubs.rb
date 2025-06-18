@@ -92,9 +92,11 @@ def stub_cancelar_turno_exitoso(id, email_stub, confirmacion)
 end
 
 def stub_cancelar_turno_sin_anticipacion(id, email_stub, confirmacion)
+  body = { mensaje: 'Necesitas confirmacion para cancelar este turno' }.to_json
+  body2 = { mensaje: 'Turno actualizado: estado Ausente' }.to_json
   stub_request(:put, "#{ENV['API_URL']}/turnos/#{id}/cancelacion")
     .with(body: { email: email_stub, confirmacion: }.to_json)
-    .to_return(status: confirmacion ? 200 : 409, body: '', headers: {})
+    .to_return(status: confirmacion ? 200 : 409, body: confirmacion ? body2 : body, headers: {})
 end
 
 def stub_reservar_turno_fallido

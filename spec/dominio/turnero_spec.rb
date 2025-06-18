@@ -116,7 +116,7 @@ describe 'Turnero' do
   end
 
   it 'deberia devolver error si se intenta cancelar un turno con menos de 24hs de anticipacion' do
-    resultado = ResultadoCancelarTurno.new(exito: false, error: 'Necesitas confirmacion para cancelar el turno')
+    resultado = ResultadoCancelarTurno.new(exito: false, error: 'Necesitas confirmacion para cancelar este turno')
     allow(proveedor_mock).to receive(:cancelar_turno).and_return(resultado)
     expect { turnero.cancelar_turno(1, 'pepe@mail.com', false) }.to raise_error(CancelacionNecesitaConfirmacionException)
   end

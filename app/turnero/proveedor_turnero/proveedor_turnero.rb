@@ -178,8 +178,9 @@ class ProveedorTurnero
     case response.status
     when 200..299
       ResultadoCancelarTurno.new(exito: true)
-    when 409
-      ResultadoCancelarTurno.new(exito: false)
+    when 400..499
+      error = JSON.parse(response.body)['mensaje']
+      ResultadoCancelarTurno.new(exito: false, error:)
     end
   end
 
