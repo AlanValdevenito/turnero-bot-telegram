@@ -556,4 +556,32 @@ describe 'ProveedorTurnero' do
       expect(resultado.exito?).to be false
     end
   end
+
+  describe 'penalización por reputación' do
+    it 'deberia devolver un resultado exitoso si no hay penalización por reputación' do
+      stub_request(:get, "#{api_url}/usuarios/#{datos_usuario[:email]}/penalizacion")
+        .to_return(status: 200, body: '', headers: { 'Content-Type' => 'application/json' })
+      resultado = proveedor.penalizar_si_corresponde(datos_usuario[:email])
+      expect(resultado.exito?).to be true
+    end
+
+    it 'deberia devolver un error si hay penalización por reputación' do
+      stub_request(:get, "#{api_url}/usuarios/#{datos_usuario[:email]}/penalizacion")
+        .to_return(status: 400, body: { error: 'Penalización por porcentaje de asistencia abajo del 80%' }.to_json, headers: { 'Content-Type' => 'application/json' })
+      resultado = proveedor.penalizar_si_corresponde(datos_usuario[:email])
+      expect(resultado.exito?).to be false
+    end
+
+    it 'deberia lanzar una excepción si hay un error de conexión al verificar penalización por reputación' do
+      stub_request(:get, "#{api_url}/usuarios/#{datos_usuario[:email]}/penalizacion")
+        .to_raise(Faraday::Error.new('Error de conexión'))
+      expect { proveedor.penalizar_si_corresponde(datos_usuario[:email]) }.to raise_error(ErrorConexionAPI)
+    end
+
+    it 'deberia lanzar una excepción si hay un error de API al verificar penalización por reputación' do
+      stub_request(:get, "#{api_url}/usuarios/#{datos_usuario[:email]}/penalizacion")
+        .to_return(status: 500, body: { error: 'Error interno del servidor' }.to_json, headers: { 'Content-Type' => 'application/json' })
+      expect { proveedor.penalizar_si_corresponde(datos_usuario[:email]) }.to raise_error(ErrorAPIPenalizacionException)
+    end
+  end
 end

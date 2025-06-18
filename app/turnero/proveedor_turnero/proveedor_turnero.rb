@@ -10,6 +10,7 @@ require_relative './resultados.rb/resultado_historial_turnos'
 require_relative './resultados.rb/resultado_registrado'
 require_relative './resultados.rb/resultado_especialidades_disponibles'
 require_relative './resultados.rb/resultado_cancelar_turno'
+require_relative './resultados.rb/resultado_penalizacion'
 require_relative 'proveedor_turnero_helpers'
 # rubocop:disable Metrics/ClassLength
 class ProveedorTurnero
@@ -34,6 +35,21 @@ class ProveedorTurnero
       ResultadoRegistrado.new(exito: false, error:)
     else
       raise ErrorAPIVerificarUsuarioException
+    end
+  rescue Faraday::Error
+    raise ErrorConexionAPI
+  end
+
+  def penalizar_si_corresponde(email)
+    response = Faraday.get("#{@api_url}/usuarios/#{email}/penalizacion", {}, crear_header)
+    case response.status
+    when 200..299
+      ResultadoPenalizacion.new(exito: true)
+    when 400..499
+      error = JSON.parse(response.body)['error']
+      ResultadoPenalizacion.new(exito: false, error:)
+    else
+      raise ErrorAPIPenalizacionException
     end
   rescue Faraday::Error
     raise ErrorConexionAPI

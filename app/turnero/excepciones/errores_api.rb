@@ -15,3 +15,6 @@ end
 
 class ErrorAPIProximosTurnosException < StandardError
 end
+
+class ErrorAPIPenalizacionException < StandardError
+end
