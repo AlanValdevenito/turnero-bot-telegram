@@ -132,4 +132,10 @@ describe 'Turnero' do
     allow(proveedor_mock).to receive(:reservar_turno).and_return(resultado)
     expect { turnero.reservar_turno('12345', '2025-06-10', '10:00', email) }.to raise_error(LimiteDeTurnosException)
   end
+
+  it 'deberia lanzar excepcion si el usuario esta penalizado' do
+    resultado = ResultadoPenalizacion.new(exito: false, error: 'El usuario está penalizado')
+    allow(proveedor_mock).to receive(:penalizar_si_corresponde).and_return(resultado)
+    expect { turnero.penalizar_si_corresponde(email) }.to raise_error(PenalizacionPorReputacionException)
+  end
 end
