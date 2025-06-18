@@ -28,6 +28,7 @@ class PedirTurnoRoutes
   def self.pedir_turno(telegram_id)
     turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
     email = turnero.usuario_registrado?(telegram_id)
+    turnero.penalizar_si_corresponde(email)
 
     kb = [[Telegram::Bot::Types::InlineKeyboardButton.new(text: 'Por especialidad', callback_data: "e|#{email}")],
           [Telegram::Bot::Types::InlineKeyboardButton.new(text: 'Por medico', callback_data: "m|#{email}")]]

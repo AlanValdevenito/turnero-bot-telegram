@@ -124,29 +124,16 @@ def stub_reservar_turno_superpuesto
     .to_return(status: 409, body: { error: 'Ya existe un turno reservado en esa fecha y horario' }.to_json, headers: { 'Content-Type' => 'application/json' })
 end
 
-def stub_reservar_turno_penalizado
-  stub_request(:post, "#{ENV['API_URL']}/turnos")
-    .with(
-      body: { matricula: '123', fecha: '2023-10-01', hora: '10:00', email: 'pepe@gmail' }.to_json,
-      headers: { 'Content-Type' => 'application/json' }
-    )
-    .to_return(status: 400, body: { error: 'Penalización por porcentaje de asistencia abajo del 80%' }.to_json, headers: { 'Content-Type' => 'application/json' })
-end
-
-def stub_flujo_turno_penalizacion(turnos_disponibles, matricula = '123')
-  stub_registrado(true)
-  stub_turnos_disponibles_exitoso(turnos_disponibles, matricula)
-  stub_reservar_turno_penalizado
-end
-
 def stub_flujo_turno_ya_reservado(turnos_disponibles, matricula = '123')
   stub_registrado(true)
+  stub_no_penalizado(true)
   stub_turnos_disponibles_exitoso(turnos_disponibles, matricula)
   stub_reservar_turno_ya_reservado
 end
 
 def stub_flujo_turno_superpuesto(turnos_disponibles, matricula = '123')
   stub_registrado(true)
+  stub_no_penalizado(true)
   stub_turnos_disponibles_exitoso(turnos_disponibles, matricula)
   stub_reservar_turno_superpuesto
 end
@@ -161,6 +148,16 @@ def stub_registrado(exito)
   end
 end
 
+def stub_no_penalizado(exito)
+  if exito
+    stub_request(:get, "#{ENV['API_URL']}/usuarios/pepe@gmail/penalizacion")
+      .to_return(status: 200, body: { message: 'El usuario no es penalizado' }.to_json, headers: { 'Content-Type' => 'application/json' })
+  else
+    stub_request(:get, "#{ENV['API_URL']}/usuarios/pepe@gmail/penalizacion")
+      .to_return(status: 400, body: { error: 'Penalización por porcentaje de asistencia abajo del 80%' }.to_json, headers: { 'Content-Type' => 'application/json' })
+  end
+end
+
 def stub_error_conexion(tipo, ruta)
   stub_request(tipo, "#{ENV['API_URL']}#{ruta}")
     .to_raise(Faraday::ConnectionFailed.new('Error de conexión'))
@@ -168,6 +165,7 @@ end
 
 def stub_flujo_reserva_turno_con_error_conexion(medicos_disponibles, turnos_disponibles, matricula = '123')
   stub_registrado(true)
+  stub_no_penalizado(true)
   stub_medicos_disponibles_exitoso(medicos_disponibles)
   stub_turnos_disponibles_exitoso(turnos_disponibles, matricula)
   stub_error_conexion(:post, '/turnos')
@@ -175,6 +173,7 @@ end
 
 def stub_flujo_turnos_disponibles_con_error_conexion(medicos_disponibles, matricula = '123')
   stub_registrado(true)
+  stub_no_penalizado(true)
   stub_medicos_disponibles_exitoso(medicos_disponibles)
   stub_error_conexion(:get, "/turnos/#{matricula}/disponibilidad")
 end
@@ -186,6 +185,7 @@ end
 
 def stub_turnos_proximos_exitoso
   stub_registrado(true)
+  stub_no_penalizado(true)
   stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/proximos/pepe@gmail")
     .to_return(
       status: 200,
@@ -209,6 +209,7 @@ end
 
 def stub_turnos_proximos_fallido
   stub_registrado(true)
+  stub_no_penalizado(true)
   stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/proximos/pepe@gmail")
     .to_return(
       status: 404,
@@ -219,6 +220,7 @@ end
 
 def stub_historial_turnos_vacio
   stub_registrado(true)
+  stub_no_penalizado(true)
   stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/historial/pepe@gmail")
     .to_return(
       status: 400,
@@ -229,6 +231,7 @@ end
 
 def stub_historial_turnos_exitoso
   stub_registrado(true)
+  stub_no_penalizado(true)
   stub_request(:get, "#{ENV['API_URL']}/turnos/pacientes/historial/pepe@gmail")
     .to_return(
       status: 200,

@@ -16,6 +16,11 @@ class Turnero
     resultado.email
   end
 
+  def penalizar_si_corresponde(email)
+    resultado = @proveedor_turnero.penalizar_si_corresponde(email)
+    raise PenalizacionPorReputacionException unless resultado.exito?
+  end
+
   def registrar_paciente(email, telegram_id)
     resultado = @proveedor_turnero.crear_usuario(email, telegram_id)
 
