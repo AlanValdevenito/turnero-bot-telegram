@@ -163,8 +163,8 @@ describe 'BotClient' do
 
   let(:opciones_tipo_reserva) do
     [
-      { text: 'Por especialidad', callback_data: 'pedir_turno_especialidad' },
-      { text: 'Por medico', callback_data: 'pedir_turno_medico' }
+      { text: 'Por especialidad', callback_data: 'e|pepe@gmail' },
+      { text: 'Por medico', callback_data: 'm|pepe@gmail' }
     ]
   end
 
@@ -344,7 +344,7 @@ describe 'BotClient' do
 
     when_i_send_text(token, '/pedir-turno')
     then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_medico', opciones_tipo_reserva)
+    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TIPO_RESERVA, 'm|pepe@gmail', opciones_tipo_reserva)
   end
 
   def cuando_pido_reservar_turno_por_especialidad(token)
@@ -359,7 +359,7 @@ describe 'BotClient' do
 
     when_i_send_text(token, '/pedir-turno')
     then_i_get_keyboard_message(token, MENSAJE_SELECCIONE_TIPO_RESERVA, opciones_tipo_reserva)
-    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TIPO_RESERVA, 'pedir_turno_especialidad', opciones_tipo_reserva)
+    when_i_send_keyboard_updates(token, MENSAJE_SELECCIONE_TIPO_RESERVA, 'e|pepe@gmail', opciones_tipo_reserva)
   end
 
   it 'should get a /version message and respond with current version' do

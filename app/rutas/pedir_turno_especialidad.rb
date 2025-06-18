@@ -13,10 +13,9 @@ class PedirTurnoEspecialidadRoutes
     seleccionar_especialidad_on_response(routing)
   end
 
-  def self.pedir_turno(bot, message)
+  def self.pedir_turno(bot, message, email)
     ErroresTurno.handle_error_pedir_turno(bot, message.from.id) do
       turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
-      email = turnero.usuario_registrado?(message.from.id)
       especialidades = turnero.solicitar_especialidades_disponibles
 
       bot.api.send_message(chat_id: message.from.id, text: MENSAJE_SELECCIONE_ESPECIALIDAD, reply_markup: crear_markup(especialidades, email))
