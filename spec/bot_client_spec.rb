@@ -529,6 +529,14 @@ describe 'BotClient' do
 
       run_bot_once('fake_token')
     end
+
+    it 'deberia recibir un mensaje inline keyboard y mensaje de turno no cancelado' do
+      stub_registrado(true)
+      setup_cancelacion_sin_anticipacion('fake_token', MENSAJE_CONFIRMAR_CANCELACION_TURNO, 'false|1|pepe@gmail', opciones_confirmacion)
+      then_i_get_text('fake_token', MENSAJE_RECHAZAR_CANCELACION_TURNO)
+
+      run_bot_once('fake_token')
+    end
   end
 
   it 'should get a /stop message and respond with Chau' do

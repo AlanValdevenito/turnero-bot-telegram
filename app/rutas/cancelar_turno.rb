@@ -40,10 +40,22 @@ class CancelarTurnoRoutes
 
   def self.seleccionar_confirmacion_on_response(routing)
     routing.on_response_to MENSAJE_CONFIRMAR_CANCELACION_TURNO do |bot, message|
-      _confirmacion, turno_id, email = message.data.split('|')
-      turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
-      turnero.cancelar_turno(turno_id, email, true)
-      bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_TURNO_AUSENTE)
+      confirmacion, turno_id, email = message.data.split('|')
+      if confirmacion == 'true'
+        confirmar_cancelacion(turno_id, email, bot, message)
+      else
+        rechazar_cancelacion(bot, message)
+      end
     end
+  end
+
+  def self.confirmar_cancelacion(turno_id, email, bot, message)
+    turnero = Turnero.new(ProveedorTurnero.new(ENV['API_URL'], ENV['API_KEY']))
+    turnero.cancelar_turno(turno_id, email, true)
+    bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_TURNO_AUSENTE)
+  end
+
+  def self.rechazar_cancelacion(bot, message)
+    bot.api.send_message(chat_id: message.message.chat.id, text: MENSAJE_RECHAZAR_CANCELACION_TURNO)
   end
 end
