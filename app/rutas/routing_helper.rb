@@ -8,15 +8,18 @@ class RoutingHelper
         responder_tipo_reserva_deshabilitado(bot, message)
         next
       end
-
-      tipo, email = message.data.split('|')
-      case tipo
-      when 'm'
-        TecladoDeshabilitado.disable_keyboard_buttons(bot, message, message.data)
-        PedirTurnoMedicoRoutes.pedir_turno(bot, message, email)
-      when 'e'
-        TecladoDeshabilitado.disable_keyboard_buttons(bot, message, message.data)
-        PedirTurnoEspecialidadRoutes.pedir_turno(bot, message, email)
+      begin
+        tipo, email = message.data.split('|')
+        case tipo
+        when 'm'
+          TecladoDeshabilitado.disable_keyboard_buttons(bot, message, message.data)
+          PedirTurnoMedicoRoutes.pedir_turno(bot, message, email)
+        when 'e'
+          TecladoDeshabilitado.disable_keyboard_buttons(bot, message, message.data)
+          PedirTurnoEspecialidadRoutes.pedir_turno(bot, message, email)
+        end
+      rescue TecladoYaDeshabilitadoError
+        # Procesamiento detenido por doble clic - no hacer nada
       end
     end
   end

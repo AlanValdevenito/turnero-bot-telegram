@@ -13,12 +13,16 @@ class ErroresTurno
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
   rescue PenalizacionPorReputacionException
     bot.api.send_message(chat_id:, text: MENSAJE_PENALIZACION)
+  rescue TecladoYaDeshabilitadoError
+    # Procesamiento detenido por doble clic - no hacer nada
   end
 
   def self.handle_error_seleccionar_especialidad(bot, chat_id)
     yield
   rescue NoHayMedicosDisponiblesException
     bot.api.send_message(chat_id:, text: MENSAJE_NO_MEDICOS_ESPECIALIDAD)
+  rescue TecladoYaDeshabilitadoError
+    # Procesamiento detenido por doble clic - no hacer nada
   end
 
   def self.handle_error_seleccionar_medico(bot, chat_id)
@@ -29,6 +33,8 @@ class ErroresTurno
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_TURNOS)
   rescue ErrorConexionAPI
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
+  rescue TecladoYaDeshabilitadoError
+    # Procesamiento detenido por doble clic - no hacer nada
   end
 
   def self.handle_error_seleccionar_turno(bot, chat_id)
@@ -43,5 +49,7 @@ class ErroresTurno
     bot.api.send_message(chat_id:, text: MENSAJE_ERROR_GENERAL)
   rescue LimiteDeTurnosException
     bot.api.send_message(chat_id:, text: MENSAJE_LIMITE_TURNOS)
+  rescue TecladoYaDeshabilitadoError
+    # Procesamiento detenido por doble clic - no hacer nada
   end
 end
